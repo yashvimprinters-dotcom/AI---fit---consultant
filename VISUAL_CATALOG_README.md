@@ -1,0 +1,1 @@
+v15 adds named visual cards for outfits, footwear and accessories. The cards use lightweight local illustrations/icons so the app does not hotlink copyrighted product photos. For production, licensed retailer/SKU photos can replace these visuals while retaining the same names and selection system.
