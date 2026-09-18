@@ -14,7 +14,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">AI FIT CONSULTANT v11</div>
+  <div class="brand">AI FIT CONSULTANT v17</div>
   <h1>Fit first. Then choose your look and see it on you.</h1>
   <p>Two separate experiences: use <b>Clothes Fitting</b> to find a seller size, then use <b>Colour Selection & Visual Try-On</b> to explore colours and outfits on your photo.</p>
 </header>
@@ -365,5 +365,177 @@ document.getElementById('shareTryOn').addEventListener('click',async()=>{
   });
 })();
 </script>
+<!-- V15_VISUAL_FASHION_CATALOG -->
+<section class="v15-catalog">
+<h2>🖼️ Visual Fashion Catalog</h2>
+<p>See the item, learn its name, and tap it to add it to your styling choices.</p>
+<div class="v15-tabs">
+<button type="button" data-tab="outfits">👕 Outfits</button>
+<button type="button" data-tab="footwear">👟 Footwear</button>
+<button type="button" data-tab="accessories">⌚ Accessories</button>
+</div>
+<div id="v15-cards" class="v15-cards"></div>
+</section>
+<style>
+.v15-catalog{margin-top:24px;padding:18px;border:1px solid #ddd;border-radius:16px}
+.v15-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.v15-tabs button{padding:9px 13px;border:1px solid #ccc;border-radius:10px;cursor:pointer}
+.v15-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.v15-card{border:1px solid #ddd;border-radius:14px;overflow:hidden;cursor:pointer;background:inherit;padding:0;text-align:left}
+.v15-art{height:105px;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,#f5f5f5,#e9e9e9)}
+.v15-name{font-weight:700;padding:9px 10px 2px}.v15-cat{font-size:12px;opacity:.65;padding:0 10px 10px}
+.v15-selected{outline:2px solid #222}
+</style>
+<script>
+(function(){
+const root=document.querySelector(".v15-catalog"), cards=document.getElementById("v15-cards"); if(!root||!cards)return;
+let data,active="outfits";
+async function load(){data=await (await fetch("/visual-catalog.json")).json();render();}
+function render(){const arr=data[active]||[];cards.innerHTML=arr.map((x,i)=>`<button type="button" class="v15-card" data-i="${i}"><div class="v15-art">${x[1]}</div><div class="v15-name">${x[0]}</div><div class="v15-cat">${x[2]||active}</div></button>`).join("");
+cards.querySelectorAll(".v15-card").forEach((b,i)=>b.onclick=()=>{cards.querySelectorAll(".v15-card").forEach(x=>x.classList.remove("v15-selected"));b.classList.add("v15-selected");window.dispatchEvent(new CustomEvent("v15-fashion-item-selected",{detail:{type:active,name:arr[i][0],category:arr[i][2]||""}}));});}
+root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dataset.tab;render();});load().catch(()=>cards.innerHTML="<p>Catalog unavailable.</p>");
+})();
+</script><!-- V16_REAL_PRODUCT_LOOK_BUILDER -->
+<section class="v16-builder">
+<h2>🛍️ Build Your Exact Look</h2>
+<p>Select individual pieces. Change one item without rebuilding the whole outfit.</p>
+<div class="v16-stage" id="v16-stage">
+  <div class="v16-person">🧍</div>
+  <div><b>Top</b><span id="v16-top">Classic T-Shirt</span></div>
+  <div><b>Bottom</b><span id="v16-bottom">Straight Jeans</span></div>
+  <div><b>Outerwear</b><span id="v16-outer">None</span></div>
+  <div><b>Footwear</b><span id="v16-shoe">White Sneakers</span></div>
+  <div><b>Accessory</b><span id="v16-acc">Classic Watch</span></div>
+</div>
+<div class="v16-grid">
+ <label>Top<select id="v16_top"></select></label>
+ <label>Bottom<select id="v16_bottom"></select></label>
+ <label>Outerwear<select id="v16_outer"></select></label>
+ <label>Footwear<select id="v16_shoe"></select></label>
+ <label>Accessory<select id="v16_acc"></select></label>
+</div>
+<div class="v16-actions">
+ <button type="button" id="v16_preview">✨ Try this exact look</button>
+ <button type="button" id="v16_swap">🔄 Generate 3 variations</button>
+</div>
+<div id="v16_msg"></div>
+</section>
+<style>
+.v16-builder{margin-top:24px;padding:18px;border:1px solid #ddd;border-radius:16px}
+.v16-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:14px 0}
+.v16-grid label{font-weight:600}.v16-grid select{display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:9px}
+.v16-stage{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:14px;border-radius:12px;background:#f5f5f5}
+.v16-stage div:not(.v16-person){display:flex;flex-direction:column;gap:3px}.v16-person{grid-row:span 2;font-size:65px;display:flex;align-items:center;justify-content:center}
+.v16-actions{display:flex;gap:8px;flex-wrap:wrap}.v16-actions button{padding:10px 14px;border-radius:10px;border:1px solid #aaa;cursor:pointer}
+</style>
+<script>
+(function(){
+ const $=id=>document.getElementById(id), root=document.querySelector(".v16-builder"); if(!root)return;
+ let data;
+ function fill(id,arr,none=false){const s=$(id); if(!s)return;s.innerHTML=none?'<option value="">None</option>':'';arr.forEach(x=>{let o=document.createElement("option");o.value=x.id;o.textContent=x.name;s.appendChild(o);});}
+ function selected(arr,id){return (arr||[]).find(x=>x.id===id)?.name||"None";}
+ async function init(){
+  data=await (await fetch("/product-catalog.json")).json();
+  fill("v16_top",data.tops);fill("v16_bottom",data.bottoms);fill("v16_outer",data.outerwear,true);fill("v16_shoe",data.footwear);fill("v16_acc",data.accessories);
+  $("v16_outer").value="";
+  render();
+ }
+ function render(){
+  $("v16-top").textContent=selected(data.tops,$("v16_top").value);
+  $("v16-bottom").textContent=selected(data.bottoms,$("v16_bottom").value);
+  $("v16-outer").textContent=selected(data.outerwear,$("v16_outer").value);
+  $("v16-shoe").textContent=selected(data.footwear,$("v16_shoe").value);
+  $("v16-acc").textContent=selected(data.accessories,$("v16_acc").value);
+ }
+ ["v16_top","v16_bottom","v16_outer","v16_shoe","v16_acc"].forEach(id=>$(id).addEventListener("change",render));
+ $("v16_preview").onclick=()=>{
+   const detail={top:selected(data.tops,$("v16_top").value),bottom:selected(data.bottoms,$("v16_bottom").value),
+   outerwear:selected(data.outerwear,$("v16_outer").value),footwear:selected(data.footwear,$("v16_shoe").value),
+   accessory:selected(data.accessories,$("v16_acc").value)};
+   window.dispatchEvent(new CustomEvent("v16-look-ready",{detail}));
+   $("v16_msg").textContent="✓ Look selected. Send this combination to Visual Try-On.";
+ };
+ $("v16_swap").onclick=()=>{ $("v16_msg").textContent="AI variation mode can now change one component at a time while preserving the rest of your look."; };
+ init().catch(()=>{$("v16_msg").textContent="Product catalog could not be loaded.";});
+})();
+</script>
+
+<!-- V17 EXACT PRODUCT TRY-ON -->
+<section class="v17-builder" id="v17ExactTryOn">
+  <h2>📸 Exact Product Try-On</h2>
+  <p class="v17-note">Select your exact pieces. If you have product photos, attach them to the matching item so the AI can use those images as references. You can change one item without rebuilding the whole look.</p>
+  <div class="v17-grid">
+    <div class="v17-card"><b>👕 Top</b><select id="v17_top_select"></select><input id="v17_top_img" type="file" accept="image/*"><small>Exact product photo (optional)</small><img id="v17_top_preview" class="v17-thumb" style="display:none"></div>
+    <div class="v17-card"><b>👖 Bottom</b><select id="v17_bottom_select"></select><input id="v17_bottom_img" type="file" accept="image/*"><small>Exact product photo (optional)</small><img id="v17_bottom_preview" class="v17-thumb" style="display:none"></div>
+    <div class="v17-card"><b>🧥 Outerwear</b><select id="v17_outer_select"></select><input id="v17_outer_img" type="file" accept="image/*"><small>Exact product photo (optional)</small><img id="v17_outer_preview" class="v17-thumb" style="display:none"></div>
+    <div class="v17-card"><b>👟 Footwear</b><select id="v17_shoe_select"></select><input id="v17_shoe_img" type="file" accept="image/*"><small>Exact product photo (optional)</small><img id="v17_shoe_preview" class="v17-thumb" style="display:none"></div>
+    <div class="v17-card"><b>👜 Accessory</b><select id="v17_acc_select"></select><input id="v17_acc_img" type="file" accept="image/*"><small>Exact product photo (optional)</small><img id="v17_acc_preview" class="v17-thumb" style="display:none"></div>
+  </div>
+  <div class="v17-summary" id="v17_summary">Your current exact-look selections will appear here.</div>
+  <div class="v17-actions">
+    <button type="button" id="v17_try">✨ Generate Complete Look on Me</button>
+    <button type="button" class="secondary-btn" id="v17_change_top">Change Top Only</button>
+    <button type="button" class="secondary-btn" id="v17_change_bottom">Change Bottom Only</button>
+    <button type="button" class="secondary-btn" id="v17_change_outer">Change Outerwear Only</button>
+    <button type="button" class="secondary-btn" id="v17_change_shoe">Change Footwear Only</button>
+    <button type="button" class="secondary-btn" id="v17_change_acc">Change Accessory Only</button>
+  </div>
+  <div id="v17_status" class="tryon-status"></div>
+  <img id="v17_image" class="preview" alt="Exact product visual try-on preview" style="display:none">
+  <div class="v17-note"><b>How this works:</b> your customer photo is always the first reference. Uploaded product photos are additional references. The AI uses them to compose the selected complete look while preserving the person. A generated image is still a visual approximation, not a measurement or fit guarantee.</div>
+</section>
+<style>
+.v17-builder{margin-top:24px;padding:18px;border:1px solid #ddd;border-radius:16px;background:#fff}.v17-builder h2{margin-top:0}.v17-note{font-size:13px;color:#666;line-height:1.5}.v17-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:15px 0}.v17-card{border:1px solid #e1e3e6;border-radius:14px;padding:12px;background:#fafafa}.v17-card b{display:block;margin-bottom:8px}.v17-card select,.v17-card input{width:100%;box-sizing:border-box;margin:5px 0;padding:9px;border:1px solid #d7d9de;border-radius:9px;background:#fff}.v17-card small{display:block;color:#777;font-size:11px}.v17-thumb{width:100%;max-height:160px;object-fit:contain;border-radius:10px;background:#fff;margin-top:8px}.v17-summary{padding:12px;border-radius:12px;background:#f5f6f7;font-size:13px;line-height:1.5}.v17-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.v17-actions button{margin-top:8px}@media(max-width:600px){.v17-actions{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+ const $=id=>document.getElementById(id), root=$('v17ExactTryOn'); if(!root)return;
+ let data=null;
+ const slots={
+   top:{sel:'v17_top_select',file:'v17_top_img',preview:'v17_top_preview',label:'Top'},
+   bottom:{sel:'v17_bottom_select',file:'v17_bottom_img',preview:'v17_bottom_preview',label:'Bottom'},
+   outerwear:{sel:'v17_outer_select',file:'v17_outer_img',preview:'v17_outer_preview',label:'Outerwear'},
+   footwear:{sel:'v17_shoe_select',file:'v17_shoe_img',preview:'v17_shoe_preview',label:'Footwear'},
+   accessory:{sel:'v17_acc_select',file:'v17_acc_img',preview:'v17_acc_preview',label:'Accessory'}
+ };
+ function fill(slot,arr,none){const s=$(slot.sel);s.innerHTML=none?'<option value="">None</option>':'';(arr||[]).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;s.appendChild(o);});}
+ function item(slot){const arr=data[slot]||[];const id=$(slots[slot].sel).value;return arr.find(x=>x.id===id)||null;}
+ function renderSummary(){const parts=Object.keys(slots).map(k=>{const x=item(k);return slots[k].label+': '+(x?.name||'None')});$('v17_summary').textContent=parts.join('  •  ');}
+ function wireFile(slot){$(slots[slot].file).addEventListener('change',e=>{const f=e.target.files[0],img=$(slots[slot].preview);if(!f){img.style.display='none';return}img.src=URL.createObjectURL(f);img.style.display='block';});}
+ async function init(){data=await (await fetch('/product-catalog.json')).json();fill('top',data.tops);fill('bottom',data.bottoms);fill('outerwear',data.outerwear,true);fill('footwear',data.footwear);fill('accessories',data.accessories);}
+ // The catalog uses "accessories" while the slot is "accessory".
+ function setup(){
+   fill('top',data.tops);fill('bottom',data.bottoms);fill('outerwear',data.outerwear,true);fill('footwear',data.footwear);fill('accessory',data.accessories);
+   $('v17_outer_select').value='';
+   Object.keys(slots).forEach(k=>{$(slots[k].sel).addEventListener('change',renderSummary);wireFile(k);});
+   renderSummary();
+ }
+ fetch('/product-catalog.json').then(r=>r.json()).then(d=>{data=d;setup();}).catch(()=>{$('v17_status').textContent='Product catalog could not be loaded.';});
+ function makeForm(changed){
+   const photoInput=document.querySelector('input[name="photo"]');
+   if(!photoInput?.files.length){throw new Error('Please upload your full-body customer photo in Clothes Fitting first.');}
+   const fd=new FormData();fd.append('photo',photoInput.files[0]);fd.append('changed_item',changed||'all');
+   const mapping={top:'top',bottom:'bottom',outerwear:'outerwear',footwear:'footwear',accessory:'accessory'};
+   for(const k of Object.keys(slots)){
+     const x=item(k);fd.append(k+'_name',x?.name||'None');
+     const f=$(slots[k].file).files[0];if(f)fd.append(k+'_image',f);
+   }
+   return fd;
+ }
+ async function generate(changed){
+   const btn=$('v17_try');btn.disabled=true;btn.textContent='Creating exact-product preview…';$('v17_status').textContent='AI is combining the customer photo with the selected product references.';$('v17_image').style.display='none';
+   try{const fd=makeForm(changed);const r=await fetch('/api/try-on-exact',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Try-on failed')+(d.details?'\n\n'+d.details:''));$('v17_image').src=d.image_data_url;$('v17_image').style.display='block';$('v17_status').textContent=(d.note||'Preview created.')+' Reference product images used: '+d.reference_count+'.';$('v17_image').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){$('v17_status').textContent='';alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Generate Complete Look on Me';}
+ }
+ $('v17_try').addEventListener('click',()=>generate('all'));
+ [['v17_change_top','top'],['v17_change_bottom','bottom'],['v17_change_outer','outerwear'],['v17_change_shoe','footwear'],['v17_change_acc','accessory']].forEach(([id,itemName])=>$(id).addEventListener('click',()=>generate(itemName)));
+ // v16 selection can seed v17 selectors when the user clicks "Try this exact look".
+ window.addEventListener('v16-look-ready',e=>{
+   const d=e.detail||{};
+   const setByName=(slot,name)=>{if(!name)return;const arr=data?.[slot]||[];const x=arr.find(v=>v.name===name);if(x)$(slots[slot].sel).value=x.id;};
+   if(data){setByName('top',d.top);setByName('bottom',d.bottom);setByName('outerwear',d.outerwear);setByName('footwear',d.footwear);setByName('accessory',d.accessory);renderSummary();}
+   root.scrollIntoView({behavior:'smooth',block:'start'});
+ });
+})();
+</script>
+
 </body>
 </html>
