@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#111111">
-<title>Find My Fit — AI Fit Consultant</title>
+<title>Find My Fit — AI Fit Consultant v6</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f5f7;color:#111}
 header{background:#111;color:#fff;padding:22px 18px 28px}header .brand{font-weight:800;font-size:20px}header h1{font-size:30px;line-height:1.05;margin:28px 0 8px;max-width:520px}header p{color:#c9c9c9;margin:0;max-width:560px}
@@ -14,7 +14,8 @@ label{display:block;font-size:13px;font-weight:750;margin:14px 0 7px}input,selec
 .toggle{display:flex;align-items:center;gap:10px;margin:12px 0;color:#555;font-size:14px}.toggle input{width:auto}
 button{width:100%;border:0;border-radius:12px;padding:15px;background:#111;color:#fff;font-size:16px;font-weight:800;margin-top:15px}button:disabled{opacity:.5}
 .result{display:none}.size{font-size:44px;font-weight:900}.confidence{display:inline-block;padding:7px 10px;background:#eef0f2;border-radius:999px;font-weight:700;margin-top:4px}.section{margin-top:18px}.muted{color:#666;font-size:13px;line-height:1.45}
-.hint{padding:12px;border-radius:12px;background:#f5f6f7;margin-top:8px;font-size:13px;color:#555;line-height:1.45}.optional{font-weight:500;color:#777}
+.hint{padding:12px;border-radius:12px;background:#f5f6f7;margin-top:8px;font-size:13px;color:#555;line-height:1.45}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chip{padding:8px 11px;border-radius:999px;background:#eef0f2;font-weight:650;font-size:13px}ul{padding-left:20px}li{margin:7px 0;line-height:1.45}.optional{font-weight:500;color:#777}
+.size-chart-wrap{overflow-x:auto;margin-top:10px;border:1px solid #e1e3e6;border-radius:12px}.size-chart{width:100%;border-collapse:collapse;min-width:320px}.size-chart th,.size-chart td{padding:11px 12px;text-align:left;border-bottom:1px solid #e7e8eb;font-size:14px}.size-chart th{font-weight:800;background:#f7f7f8}.size-chart tr:last-child td{border-bottom:0}
 footer{color:#777;font-size:12px;text-align:center;padding:20px}
 @media(max-width:620px){.grid{grid-template-columns:1fr}header h1{font-size:27px}}
 </style>
@@ -58,6 +59,16 @@ footer{color:#777;font-size:12px;text-align:center;padding:20px}
     </select></div>
   </div>
 
+  <div class="grid">
+    <div><label>Complexion undertone <span class="optional">— optional</span></label><select name="complexion_undertone">
+      <option>Not sure</option><option>Warm</option><option>Cool</option><option>Neutral</option>
+    </select></div>
+    <div><label>Occasion</label><select name="occasion">
+      <option>Everyday casual</option><option>Work / smart casual</option><option>Party / evening</option><option>Wedding / festive</option><option>Travel / outdoor</option>
+    </select></div>
+  </div>
+  <div class="hint">Color advice uses your selected undertone and visible color harmony from the photo. It does not classify race or ethnicity. If you're unsure, leave undertone as Not sure.</div>
+
   <label>Seller's size chart</label>
   <textarea name="size_chart" placeholder="Option 1 — type the actual chart:
 S — chest 36 in, length 27 in
@@ -86,20 +97,25 @@ XL — chest 42 in, length 30 in"></textarea>
   <div class="muted">RECOMMENDED SIZE</div>
   <div class="size" id="size">—</div>
   <div class="confidence" id="confidence"></div>
+  <div class="section"><strong>Seller size chart</strong><div class="size-chart-wrap"><table class="size-chart"><thead><tr><th>Size</th><th>Measurements</th></tr></thead><tbody id="sizeChartRows"></tbody></table></div></div>
   <div class="section"><strong>Fit summary</strong><p id="summary"></p></div>
   <div class="section"><strong>Why</strong><p id="reasoning"></p></div>
   <div class="section"><strong>Size notes</strong><p id="notes"></p></div>
   <div class="section"><strong>What would improve accuracy</strong><p id="next"></p></div>
   <div class="section"><strong>Important caveat</strong><p id="caveats"></p></div>
+  <div class="section"><strong>Color palette</strong><div id="palette" class="chips"></div></div>
+  <div class="section"><strong>Outfit combinations</strong><ul id="combinations"></ul></div>
+  <div class="section"><strong>Style tips</strong><ul id="styleTips"></ul></div>
 </section>
 
 <section class="card">
 <strong>Privacy & accuracy</strong>
 <p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates and should be validated against the seller's actual measurements, fit details, and return/exchange policy before purchase.</p>
 </section>
-<footer>AI Fit Consultant v5 • Validation MVP</footer>
+<footer>AI Fit Consultant v6 • Fit + Color + Style MVP</footer>
 </main>
 <script>
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const form=document.getElementById('form'), btn=document.getElementById('go'), result=document.getElementById('result');
 form.addEventListener('submit',async e=>{
  e.preventDefault(); btn.disabled=true; btn.textContent='Analyzing…'; result.style.display='none';
@@ -110,11 +126,15 @@ form.addEventListener('submit',async e=>{
    if(!r.ok) throw new Error((d.error||'Something went wrong') + (d.details ? '\n\n'+d.details : ''));
    document.getElementById('size').textContent=d.recommended_size;
    document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%';
+   document.getElementById('sizeChartRows').innerHTML=(d.size_chart_rows||[]).map(row=>`<tr><td><strong>${escapeHtml(row.size)}</strong></td><td>${escapeHtml(row.measurements)}</td></tr>`).join('');
    document.getElementById('summary').textContent=d.fit_summary;
    document.getElementById('reasoning').textContent=d.reasoning;
    document.getElementById('notes').textContent=d.size_notes;
    document.getElementById('next').textContent=d.next_measurement;
    document.getElementById('caveats').textContent=d.caveats;
+   document.getElementById('palette').innerHTML=(d.color_palette||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');
+   document.getElementById('combinations').innerHTML=(d.color_combinations||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
+   document.getElementById('styleTips').innerHTML=(d.style_tips||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
    result.style.display='block'; result.scrollIntoView({behavior:'smooth'});
  }catch(err){alert(err.message)}
  finally{btn.disabled=false;btn.textContent='Find My Size'}
