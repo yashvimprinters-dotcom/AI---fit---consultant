@@ -4,34 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#111111">
-<title>Find My Fit — AI Fit Consultant v6</title>
+<title>AI Fit Consultant v9</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f5f7;color:#111}
-header{background:#111;color:#fff;padding:22px 18px 28px}header .brand{font-weight:800;font-size:20px}header h1{font-size:30px;line-height:1.05;margin:28px 0 8px;max-width:520px}header p{color:#c9c9c9;margin:0;max-width:560px}
-main{max-width:760px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 5px 25px rgba(0,0,0,.06)}
-label{display:block;font-size:13px;font-weight:750;margin:14px 0 7px}input,select,textarea{width:100%;border:1px solid #d7d9de;border-radius:11px;padding:12px;font:inherit;background:#fff}textarea{min-height:140px;resize:vertical}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo{border:2px dashed #c9ccd2;padding:22px;text-align:center;border-radius:14px;background:#fafafa}
-.toggle{display:flex;align-items:center;gap:10px;margin:12px 0;color:#555;font-size:14px}.toggle input{width:auto}
-button{width:100%;border:0;border-radius:12px;padding:15px;background:#111;color:#fff;font-size:16px;font-weight:800;margin-top:15px}button:disabled{opacity:.5}
-.result{display:none}.size{font-size:44px;font-weight:900}.confidence{display:inline-block;padding:7px 10px;background:#eef0f2;border-radius:999px;font-weight:700;margin-top:4px}.section{margin-top:18px}.muted{color:#666;font-size:13px;line-height:1.45}
-.hint{padding:12px;border-radius:12px;background:#f5f6f7;margin-top:8px;font-size:13px;color:#555;line-height:1.45}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chip{padding:8px 11px;border-radius:999px;background:#eef0f2;font-weight:650;font-size:13px}ul{padding-left:20px}li{margin:7px 0;line-height:1.45}.optional{font-weight:500;color:#777}
-.size-chart-wrap{overflow-x:auto;margin-top:10px;border:1px solid #e1e3e6;border-radius:12px}.size-chart{width:100%;border-collapse:collapse;min-width:320px}.size-chart th,.size-chart td{padding:11px 12px;text-align:left;border-bottom:1px solid #e7e8eb;font-size:14px}.size-chart th{font-weight:800;background:#f7f7f8}.size-chart tr:last-child td{border-bottom:0}
-footer{color:#777;font-size:12px;text-align:center;padding:20px}
-@media(max-width:620px){.grid{grid-template-columns:1fr}header h1{font-size:27px}}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f5f7;color:#111}header{background:#111;color:#fff;padding:22px 18px 28px}header .brand{font-weight:850;font-size:20px}header h1{font-size:30px;line-height:1.05;margin:28px 0 8px;max-width:600px}header p{color:#c9c9c9;margin:0;max-width:650px;line-height:1.5}main{max-width:820px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 5px 25px rgba(0,0,0,.06)}.section-card{border:1px solid #e5e6e9;box-shadow:none}.section-title{display:flex;gap:12px;align-items:center;margin-bottom:5px}.section-number{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-weight:850}.section-title h2{font-size:20px;margin:0}.section-subtitle{color:#666;font-size:13px;line-height:1.45;margin:0 0 18px 46px}label{display:block;font-size:13px;font-weight:750;margin:14px 0 7px}input,select,textarea{width:100%;border:1px solid #d7d9de;border-radius:11px;padding:12px;font:inherit;background:#fff}textarea{min-height:135px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo{border:2px dashed #c9ccd2;padding:20px;text-align:center;border-radius:14px;background:#fafafa}.toggle{display:flex;align-items:center;gap:10px;margin:12px 0;color:#555;font-size:14px}.toggle input{width:auto}button{width:100%;border:0;border-radius:12px;padding:15px;background:#111;color:#fff;font-size:16px;font-weight:800;margin-top:15px;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.secondary-btn{background:#fff;color:#111;border:1px solid #d7d9de}.result{display:none}.size{font-size:44px;font-weight:900}.confidence{display:inline-block;padding:7px 10px;background:#eef0f2;border-radius:999px;font-weight:700;margin-top:4px}.section{margin-top:18px}.muted{color:#666;font-size:13px;line-height:1.45}.hint{padding:12px;border-radius:12px;background:#f5f6f7;margin-top:8px;font-size:13px;color:#555;line-height:1.45}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chip{padding:8px 11px;border-radius:999px;background:#eef0f2;font-weight:650;font-size:13px}.size-chart-wrap{overflow-x:auto;margin-top:10px;border:1px solid #e1e3e6;border-radius:12px}.size-chart{width:100%;border-collapse:collapse;min-width:320px}.size-chart th,.size-chart td{padding:11px 12px;text-align:left;border-bottom:1px solid #e7e8eb;font-size:14px}.size-chart th{font-weight:800;background:#f7f7f8}.size-chart tr:last-child td{border-bottom:0}
+.color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}.color-option{border:1px solid #ddd;border-radius:12px;padding:7px;background:#fff;cursor:pointer;text-align:left;min-width:0}.color-option:hover{border-color:#111}.swatch{height:38px;border-radius:8px;margin-bottom:6px;border:1px solid rgba(0,0,0,.14)}.color-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.color-option.selected{outline:2px solid #111;outline-offset:1px}.custom-row{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:end}.custom-row input[type=color]{height:46px;padding:4px}.choice-summary{padding:12px;border-radius:12px;background:#f7f7f8;margin-top:12px;font-size:13px}.outfit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.outfit-option{border:1px solid #ddd;border-radius:12px;padding:12px;background:#fff;cursor:pointer;font-weight:700;text-align:left;line-height:1.3}.outfit-option small{display:block;color:#777;font-weight:500;margin-top:4px}.outfit-option:hover{border-color:#111}.outfit-option.selected{outline:2px solid #111;outline-offset:1px}.preview{width:100%;border-radius:16px;display:block;background:#eee;margin-top:12px}.tryon-controls{padding:14px;border:1px solid #e1e3e6;border-radius:14px;background:#fafafa}.tryon-status{font-size:13px;color:#666;margin-top:9px;line-height:1.4}.tryon-label{font-size:13px;font-weight:800;margin-top:14px}.recommend-box{padding:14px;border-radius:14px;background:#f7f7f8;margin-top:12px}.recommend-box strong{display:block;margin-bottom:6px}.pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #ddd;font-size:12px;margin:3px}.divider{height:1px;background:#ececef;margin:20px 0}ul{padding-left:20px}li{margin:7px 0;line-height:1.45}.optional{font-weight:500;color:#777}footer{color:#777;font-size:12px;text-align:center;padding:20px}@media(max-width:680px){.grid{grid-template-columns:1fr}.color-grid{grid-template-columns:repeat(4,1fr)}}@media(max-width:440px){.color-grid{grid-template-columns:repeat(3,1fr)}.outfit-grid{grid-template-columns:1fr}.custom-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand">AI FIT CONSULTANT</div>
-  <h1>Find the size that fits you better.</h1>
-  <p>Use the seller's real chart plus your measurements. A photo adds visual context, but it is not treated as an exact body-measurement tool.</p>
+  <div class="brand">AI FIT CONSULTANT v9</div>
+  <h1>Fit first. Then choose your look and see it on you.</h1>
+  <p>Two separate experiences: use <b>Clothes Fitting</b> to find a seller size, then use <b>Colour Selection & Visual Try-On</b> to explore colours and outfits on your photo.</p>
 </header>
 <main>
-<section class="card">
 <form id="form">
+
+<section class="card section-card">
+  <div class="section-title"><div class="section-number">1</div><h2>Clothes Fitting</h2></div>
+  <p class="section-subtitle">Upload your photo, enter measurements and the seller's chart. The AI recommends one available seller size and explains the evidence.</p>
+
   <div class="photo">
     <strong>📷 Your full-body photo</strong>
-    <div class="muted">Use a clear, front-facing photo with the clothing area visible.</div>
+    <div class="muted">Use a clear, front-facing photo with the clothing area visible. This photo is visual context only for sizing.</div>
     <input name="photo" type="file" accept="image/*" required>
   </div>
 
@@ -50,48 +44,73 @@ footer{color:#777;font-size:12px;text-align:center;padding:20px}
   <div class="hint">For a T-shirt, chest circumference is usually the most useful extra measurement. Only enter measurements you actually measured.</div>
 
   <div class="grid">
-    <div><label>Category</label><select name="category">
-      <option>Men's T-shirt</option><option>Men's shirt</option><option>Women's T-shirt</option>
-      <option>Women's shirt</option><option>Jeans</option><option>Trousers</option><option>Jacket</option>
-    </select></div>
-    <div><label>Preferred fit</label><select name="fit_preference">
-      <option>Regular</option><option>Slim</option><option>Relaxed</option><option>Oversized</option>
-    </select></div>
+    <div><label>Category</label><select name="category"><option>Men's T-shirt</option><option>Men's shirt</option><option>Women's T-shirt</option><option>Women's shirt</option><option>Jeans</option><option>Trousers</option><option>Jacket</option></select></div>
+    <div><label>Preferred fit</label><select name="fit_preference"><option>Regular</option><option>Slim</option><option>Relaxed</option><option>Oversized</option></select></div>
   </div>
-
-  <div class="grid">
-    <div><label>Complexion undertone <span class="optional">— optional</span></label><select name="complexion_undertone">
-      <option>Not sure</option><option>Warm</option><option>Cool</option><option>Neutral</option>
-    </select></div>
-    <div><label>Occasion</label><select name="occasion">
-      <option>Everyday casual</option><option>Work / smart casual</option><option>Party / evening</option><option>Wedding / festive</option><option>Travel / outdoor</option>
-    </select></div>
-  </div>
-  <div class="hint">Color advice uses your selected undertone and visible color harmony from the photo. It does not classify race or ethnicity. If you're unsure, leave undertone as Not sure.</div>
 
   <label>Seller's size chart</label>
-  <textarea name="size_chart" placeholder="Option 1 — type the actual chart:
-S — chest 36 in, length 27 in
+  <textarea name="size_chart" placeholder="S — chest 36 in, length 27 in
 M — chest 38 in, length 28 in
 L — chest 40 in, length 29 in
 XL — chest 42 in, length 30 in"></textarea>
   <div class="muted">Or upload a screenshot/photo of the seller's chart below. You can use either or both.</div>
-
   <label>Seller chart screenshot <span class="optional">— optional if you typed the chart</span></label>
   <input name="size_chart_image" type="file" accept="image/*">
 
   <label>What do the seller's numbers measure?</label>
-  <select name="chart_measurement_type">
-    <option>Unknown — let AI assess the chart</option>
-    <option>Body measurement</option>
-    <option>Garment measurement</option>
-  </select>
+  <select name="chart_measurement_type"><option>Unknown — let AI assess the chart</option><option>Body measurement</option><option>Garment measurement</option></select>
   <div class="hint">If the seller doesn't say, leave this as Unknown. The AI will flag the ambiguity instead of assuming.</div>
 
-  <label class="toggle"><input name="demo" type="checkbox"> Demo Mode — test the interface without using AI</label>
-  <button id="go">Find My Size</button>
-</form>
+  <label>Complexion undertone <span class="optional">— optional for styling later</span></label>
+  <select name="complexion_undertone"><option>Not sure</option><option>Warm</option><option>Cool</option><option>Neutral</option></select>
+
+  <button id="go" type="submit">Find My Size</button>
 </section>
+
+<section class="card section-card" id="styleSection">
+  <div class="section-title"><div class="section-number">2</div><h2>Colour Selection & Visual Try-On</h2></div>
+  <p class="section-subtitle">Choose from a large colour library and outfit library, or create your own. Then generate a visual preview on your uploaded photo.</p>
+
+  <label>Occasion</label>
+  <select name="occasion"><option>Everyday casual</option><option>Work / smart casual</option><option>Party / evening</option><option>Wedding / festive</option><option>Travel / outdoor</option><option>Date night</option><option>Formal event</option><option>Vacation</option><option>Sport / active</option></select>
+
+  <div class="divider"></div>
+  <div class="tryon-label">🎨 Choose a colour</div>
+  <div class="muted">Tap any colour. This choice is used for the visual try-on.</div>
+  <div id="colorGrid" class="color-grid"></div>
+
+  <div class="custom-row">
+    <div><label>Custom colour</label><input id="customColorPicker" type="color" value="#1d3557" title="Pick a custom colour"></div>
+    <div><label>Custom colour name</label><input id="customColor" type="text" placeholder="e.g. wine red, ice blue, chocolate brown"></div>
+  </div>
+
+  <div class="choice-summary"><b>Selected colour:</b> <span id="chosenColorLabel">Navy</span></div>
+
+  <div class="divider"></div>
+  <div class="tryon-label">👕 Choose an outfit</div>
+  <div class="muted">These are style templates. The selected colour is applied to the main garment.</div>
+  <div id="outfitGrid" class="outfit-grid"></div>
+  <label>Custom outfit</label>
+  <input id="customOutfit" type="text" placeholder="e.g. cream linen shirt + olive trousers + white sneakers">
+  <div class="choice-summary"><b>Selected outfit:</b> <span id="chosenOutfitLabel">T-shirt + jeans</span></div>
+
+  <div class="recommend-box">
+    <strong>Want AI suggestions?</strong>
+    <div class="muted">Run Clothes Fitting first. The result will show a recommended colour palette and outfit combinations based on your selected undertone, category and occasion.</div>
+    <button type="button" class="secondary-btn" id="goToResults">View my AI colour & outfit suggestions</button>
+  </div>
+
+  <div class="tryon-controls" style="margin-top:18px">
+    <div class="tryon-label" style="margin-top:0">✨ Visual Try-On</div>
+    <div class="muted">Your photo is edited to preview the selected clothing. The AI is instructed to preserve your face, identity, body proportions, pose and background as much as possible. This is a visual styling preview, not an exact fit guarantee.</div>
+    <button type="button" id="tryOnBtn">✨ Show me in this colour & outfit</button>
+    <div id="tryOnStatus" class="tryon-status"></div>
+    <img id="tryOnImage" class="preview" alt="AI visual clothing try-on preview" style="display:none">
+  </div>
+</section>
+
+<label class="toggle card" style="box-shadow:none;border:1px solid #e5e6e9"><input name="demo" type="checkbox"> Demo Mode — test the fitting interface without using AI</label>
+</form>
 
 <section class="card result" id="result">
   <div class="muted">RECOMMENDED SIZE</div>
@@ -103,41 +122,58 @@ XL — chest 42 in, length 30 in"></textarea>
   <div class="section"><strong>Size notes</strong><p id="notes"></p></div>
   <div class="section"><strong>What would improve accuracy</strong><p id="next"></p></div>
   <div class="section"><strong>Important caveat</strong><p id="caveats"></p></div>
-  <div class="section"><strong>Color palette</strong><div id="palette" class="chips"></div></div>
-  <div class="section"><strong>Outfit combinations</strong><ul id="combinations"></ul></div>
+  <div class="section"><strong>AI colour palette</strong><div id="palette" class="chips"></div></div>
+  <div class="section"><strong>AI outfit combinations</strong><ul id="combinations"></ul></div>
   <div class="section"><strong>Style tips</strong><ul id="styleTips"></ul></div>
 </section>
 
-<section class="card">
-<strong>Privacy & accuracy</strong>
-<p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates and should be validated against the seller's actual measurements, fit details, and return/exchange policy before purchase.</p>
-</section>
-<footer>AI Fit Consultant v6 • Fit + Color + Style MVP</footer>
+<section class="card"><strong>Privacy & accuracy</strong><p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates. Visual try-on images are generated previews and may not represent exact garment fit, fabric or measurements.</p></section>
+<footer>AI Fit Consultant v9 • Clothes Fitting • Colour Selection • Visual Try-On</footer>
 </main>
 <script>
-const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const form=document.getElementById('form'), btn=document.getElementById('go'), result=document.getElementById('result');
+const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const form=document.getElementById('form'),btn=document.getElementById('go'),result=document.getElementById('result');
+
+const colors=[
+ ['Black','#111111'],['White','#ffffff'],['Off White','#f7f4ea'],['Ivory','#fffff0'],['Cream','#fffdd0'],['Beige','#e8d3b1'],['Sand','#cbb994'],['Taupe','#b7a99a'],['Camel','#c19a6b'],['Tan','#d2b48c'],['Brown','#7b4f2c'],['Chocolate','#4b2e20'],
+ ['Charcoal','#36454f'],['Grey','#808080'],['Light Grey','#d3d3d3'],['Navy','#1d3557'],['Royal Blue','#4169e1'],['Cobalt Blue','#0047ab'],['Sky Blue','#87ceeb'],['Baby Blue','#89cff0'],['Denim Blue','#1560bd'],['Teal','#008080'],['Turquoise','#40e0d0'],['Mint','#98ff98'],
+ ['Olive','#708238'],['Forest Green','#228b22'],['Emerald','#009b77'],['Sage','#9caf88'],['Lime','#bfff00'],['Khaki','#c3b091'],['Mustard','#d4a017'],['Yellow','#ffd700'],['Orange','#f28c28'],['Rust','#b7410e'],['Coral','#ff7f50'],['Peach','#ffcba4'],
+ ['Red','#d62828'],['Burgundy','#800020'],['Maroon','#800000'],['Wine','#722f37'],['Pink','#ff69b4'],['Dusty Rose','#c08081'],['Rose','#ff007f'],['Lavender','#b57edc'],['Lilac','#c8a2c8'],['Purple','#800080'],['Plum','#8e4585'],['Magenta','#c2185b']
+];
+const outfits=[
+ ['T-shirt + jeans','Everyday casual'],['T-shirt + chinos','Clean casual'],['T-shirt + shorts','Summer casual'],['Polo + chinos','Smart casual'],['Polo + jeans','Relaxed smart'],['Casual shirt + jeans','Everyday smart'],['Casual shirt + chinos','Smart casual'],['Linen shirt + trousers','Light formal'],['Oxford shirt + trousers','Work / formal'],['Oxford shirt + chinos','Business casual'],['Shirt + blazer + trousers','Formal'],['Blazer + T-shirt + jeans','Modern smart casual'],['Blazer + shirt + trousers','Formal event'],['Denim jacket + T-shirt + jeans','Casual layers'],['Denim jacket + T-shirt + chinos','Casual layers'],['Bomber jacket + T-shirt + jeans','Street casual'],['Leather-style jacket + T-shirt + jeans','Evening casual'],['Overshirt + T-shirt + trousers','Layered casual'],['Hoodie + jeans','Relaxed casual'],['Hoodie + joggers','Athleisure'],['Sweatshirt + chinos','Casual smart'],['Sweatshirt + joggers','Athleisure'],['Cardigan + shirt + trousers','Smart layered'],['Knit sweater + jeans','Cool-weather casual'],['Knit sweater + chinos','Smart winter'],['Trench coat + trousers','Outerwear smart'],['Jacket + T-shirt + jeans','Casual layers'],['Jacket + shirt + chinos','Smart layers'],['Kurta + trousers','Indian smart casual'],['Kurta + pajama','Traditional festive'],['Kurta + jeans','Indo-western'],['Nehru jacket + kurta + trousers','Festive formal'],['Sherwani-style festive outfit','Wedding / festive'],['Saree-style festive outfit','Indian festive'],['Kurta set + dupatta','Festive'],['Dress + flats','Smart casual'],['Dress + heels','Evening'],['Blouse + trousers','Work / smart casual'],['Top + jeans','Everyday casual'],['Top + skirt','Smart casual'],['Jumpsuit','Modern evening'],['Co-ord set','Modern casual'],['Tracksuit','Sport / active'],['Athleisure layers','Travel / active'],['Monochrome outfit','Minimal'],['Neutral smart-casual outfit','Minimal smart'],['Festive Indian outfit','Wedding / festive'],['Travel / outdoor layers','Travel / outdoor']
+];
+let selectedColor='Navy', selectedOutfit='T-shirt + jeans';
+const colorGrid=document.getElementById('colorGrid'),outfitGrid=document.getElementById('outfitGrid');
+function renderColors(){colorGrid.innerHTML=colors.map(([name,hex])=>`<button type="button" class="color-option ${name===selectedColor?'selected':''}" data-color="${escapeHtml(name)}"><div class="swatch" style="background:${hex}"></div><div class="color-name">${escapeHtml(name)}</div></button>`).join('');}
+function renderOutfits(){outfitGrid.innerHTML=outfits.map(([name,desc])=>`<button type="button" class="outfit-option ${name===selectedOutfit?'selected':''}" data-outfit="${escapeHtml(name)}">${escapeHtml(name)}<small>${escapeHtml(desc)}</small></button>`).join('');}
+function updateChoiceLabels(){document.getElementById('chosenColorLabel').textContent=selectedColor;document.getElementById('chosenOutfitLabel').textContent=selectedOutfit;}
+renderColors();renderOutfits();updateChoiceLabels();
+colorGrid.addEventListener('click',e=>{const b=e.target.closest('.color-option');if(!b)return;selectedColor=b.dataset.color;document.getElementById('customColor').value='';renderColors();updateChoiceLabels();});
+outfitGrid.addEventListener('click',e=>{const b=e.target.closest('.outfit-option');if(!b)return;selectedOutfit=b.dataset.outfit;document.getElementById('customOutfit').value='';renderOutfits();updateChoiceLabels();});
+document.getElementById('customColor').addEventListener('input',e=>{if(e.target.value.trim()){selectedColor=e.target.value.trim();updateChoiceLabels();renderColors();}});
+document.getElementById('customColorPicker').addEventListener('input',e=>{selectedColor=e.target.value;document.getElementById('customColor').value=e.target.value;updateChoiceLabels();renderColors();});
+document.getElementById('customOutfit').addEventListener('input',e=>{if(e.target.value.trim()){selectedOutfit=e.target.value.trim();updateChoiceLabels();renderOutfits();}});
+
 form.addEventListener('submit',async e=>{
- e.preventDefault(); btn.disabled=true; btn.textContent='Analyzing…'; result.style.display='none';
- try{
-   const fd=new FormData(form);
-   const r=await fetch('/api/recommend',{method:'POST',body:fd});
-   const d=await r.json();
-   if(!r.ok) throw new Error((d.error||'Something went wrong') + (d.details ? '\n\n'+d.details : ''));
-   document.getElementById('size').textContent=d.recommended_size;
-   document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%';
-   document.getElementById('sizeChartRows').innerHTML=(d.size_chart_rows||[]).map(row=>`<tr><td><strong>${escapeHtml(row.size)}</strong></td><td>${escapeHtml(row.measurements)}</td></tr>`).join('');
-   document.getElementById('summary').textContent=d.fit_summary;
-   document.getElementById('reasoning').textContent=d.reasoning;
-   document.getElementById('notes').textContent=d.size_notes;
-   document.getElementById('next').textContent=d.next_measurement;
-   document.getElementById('caveats').textContent=d.caveats;
-   document.getElementById('palette').innerHTML=(d.color_palette||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');
-   document.getElementById('combinations').innerHTML=(d.color_combinations||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
-   document.getElementById('styleTips').innerHTML=(d.style_tips||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
-   result.style.display='block'; result.scrollIntoView({behavior:'smooth'});
- }catch(err){alert(err.message)}
- finally{btn.disabled=false;btn.textContent='Find My Size'}
+ e.preventDefault();btn.disabled=true;btn.textContent='Analyzing fit…';result.style.display='none';
+ try{const fd=new FormData(form);const r=await fetch('/api/recommend',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Something went wrong')+(d.details?'\n\n'+d.details:''));
+ document.getElementById('size').textContent=d.recommended_size;document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%';
+ document.getElementById('sizeChartRows').innerHTML=(d.size_chart_rows||[]).map(row=>`<tr><td><strong>${escapeHtml(row.size)}</strong></td><td>${escapeHtml(row.measurements)}</td></tr>`).join('');
+ document.getElementById('summary').textContent=d.fit_summary;document.getElementById('reasoning').textContent=d.reasoning;document.getElementById('notes').textContent=d.size_notes;document.getElementById('next').textContent=d.next_measurement;document.getElementById('caveats').textContent=d.caveats;
+ document.getElementById('palette').innerHTML=(d.color_palette||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');document.getElementById('combinations').innerHTML=(d.color_combinations||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');document.getElementById('styleTips').innerHTML=(d.style_tips||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
+ result.style.display='block';result.scrollIntoView({behavior:'smooth'});
+ }catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Find My Size';}
+});
+
+document.getElementById('goToResults').addEventListener('click',()=>{if(result.style.display==='block')result.scrollIntoView({behavior:'smooth'});else document.getElementById('go').scrollIntoView({behavior:'smooth'});});
+const tryOnBtn=document.getElementById('tryOnBtn'),tryOnStatus=document.getElementById('tryOnStatus'),tryOnImage=document.getElementById('tryOnImage');
+tryOnBtn.addEventListener('click',async()=>{
+ const photoInput=form.querySelector('input[name="photo"]');if(!photoInput.files.length){alert('Please upload your full-body photo in Clothes Fitting first.');document.getElementById('form').scrollIntoView({behavior:'smooth'});return;}
+ tryOnBtn.disabled=true;tryOnBtn.textContent='Creating visual preview…';tryOnStatus.textContent='The AI is editing the clothing while trying to preserve your face, pose, proportions and background. This can take a little while.';tryOnImage.style.display='none';
+ try{const fd=new FormData();fd.append('photo',photoInput.files[0]);fd.append('selected_color',selectedColor);fd.append('selected_outfit',selectedOutfit);fd.append('category',form.querySelector('[name="category"]').value);fd.append('fit_preference',form.querySelector('[name="fit_preference"]').value);
+ const r=await fetch('/api/try-on',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Try-on failed')+(d.details?'\n\n'+d.details:''));tryOnImage.src=d.image_data_url;tryOnImage.style.display='block';tryOnStatus.textContent=d.note||('Preview: '+d.selected_color+' • '+d.selected_outfit);tryOnImage.scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(err){tryOnStatus.textContent='';alert(err.message)}finally{tryOnBtn.disabled=false;tryOnBtn.textContent='✨ Show me in this colour & outfit';}
 });
 </script>
 </body>
