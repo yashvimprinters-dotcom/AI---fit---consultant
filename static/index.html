@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>Find My Fit — AI Fit Consultant</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f5f7;color:#111}
+header{background:#111;color:#fff;padding:22px 18px 28px}header .brand{font-weight:800;font-size:20px}header h1{font-size:30px;line-height:1.05;margin:28px 0 8px;max-width:520px}header p{color:#c9c9c9;margin:0;max-width:560px}
+main{max-width:760px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 5px 25px rgba(0,0,0,.06)}
+label{display:block;font-size:13px;font-weight:750;margin:14px 0 7px}input,select,textarea{width:100%;border:1px solid #d7d9de;border-radius:11px;padding:12px;font:inherit;background:#fff}textarea{min-height:140px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo{border:2px dashed #c9ccd2;padding:22px;text-align:center;border-radius:14px;background:#fafafa}
+.toggle{display:flex;align-items:center;gap:10px;margin:12px 0;color:#555;font-size:14px}.toggle input{width:auto}
+button{width:100%;border:0;border-radius:12px;padding:15px;background:#111;color:#fff;font-size:16px;font-weight:800;margin-top:15px}button:disabled{opacity:.5}
+.result{display:none}.size{font-size:44px;font-weight:900}.confidence{display:inline-block;padding:7px 10px;background:#eef0f2;border-radius:999px;font-weight:700;margin-top:4px}.section{margin-top:18px}.muted{color:#666;font-size:13px;line-height:1.45}
+.badge{display:inline-block;padding:6px 9px;border-radius:999px;background:#f0f1f3;font-size:12px;margin:3px}
+footer{color:#777;font-size:12px;text-align:center;padding:20px}
+@media(max-width:620px){.grid{grid-template-columns:1fr}header h1{font-size:27px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">AI FIT CONSULTANT</div>
+  <h1>Find the size that fits you better.</h1>
+  <p>Photo + your details + the seller's own size chart. Advisory recommendation, not a guarantee.</p>
+</header>
+<main>
+<section class="card">
+<form id="form">
+  <div class="photo">
+    <strong>📷 Full-body photo</strong>
+    <div class="muted">Use a clear, front-facing photo with the clothing area visible.</div>
+    <input name="photo" type="file" accept="image/*" required>
+  </div>
+
+  <div class="grid">
+    <div><label>Height (cm)</label><input name="height_cm" type="number" min="80" max="250" placeholder="e.g. 175" required></div>
+    <div><label>Weight (kg) — optional</label><input name="weight_kg" type="number" min="20" max="250" placeholder="e.g. 70"></div>
+  </div>
+
+  <div class="grid">
+    <div><label>Category</label><select name="category">
+      <option>Men's T-shirt</option><option>Men's shirt</option><option>Women's T-shirt</option>
+      <option>Women's shirt</option><option>Jeans</option><option>Trousers</option><option>Jacket</option>
+    </select></div>
+    <div><label>Preferred fit</label><select name="fit_preference">
+      <option>Regular</option><option>Slim</option><option>Relaxed</option><option>Oversized</option>
+    </select></div>
+  </div>
+
+  <label>Seller's size chart</label>
+  <textarea name="size_chart" required placeholder="Example:
+S — chest 36 in, length 27 in
+M — chest 38 in, length 28 in
+L — chest 40 in, length 29 in
+XL — chest 42 in, length 30 in"></textarea>
+  <div class="muted">This is critical. Use the brand/store's actual chart, not a generic chart.</div>
+
+  <label class="toggle"><input name="demo" type="checkbox"> Demo Mode — test the interface without using AI</label>
+  <button id="go">Find My Size</button>
+</form>
+</section>
+
+<section class="card result" id="result">
+  <div class="muted">RECOMMENDED SIZE</div>
+  <div class="size" id="size">—</div>
+  <div class="confidence" id="confidence"></div>
+  <div class="section"><strong>Fit summary</strong><p id="summary"></p></div>
+  <div class="section"><strong>Why</strong><p id="reasoning"></p></div>
+  <div class="section"><strong>Size notes</strong><p id="notes"></p></div>
+  <div class="section"><strong>What would improve accuracy</strong><p id="next"></p></div>
+  <div class="section"><strong>Important caveat</strong><p id="caveats"></p></div>
+</section>
+
+<section class="card">
+<strong>Privacy & accuracy</strong>
+<p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates and should be validated against real purchases, exchanges and returns before commercial use.</p>
+</section>
+<footer>AI Fit Consultant v3 • Validation MVP</footer>
+</main>
+<script>
+const form=document.getElementById('form'), btn=document.getElementById('go'), result=document.getElementById('result');
+form.addEventListener('submit',async e=>{
+ e.preventDefault(); btn.disabled=true; btn.textContent='Analyzing…'; result.style.display='none';
+ try{
+   const fd=new FormData(form);
+   const r=await fetch('/api/recommend',{method:'POST',body:fd});
+   const d=await r.json();
+   if(!r.ok) throw new Error((d.error||'Something went wrong') + (d.details ? '\n\n' + d.details : ''));
+   document.getElementById('size').textContent=d.recommended_size;
+   document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%';
+   document.getElementById('summary').textContent=d.fit_summary;
+   document.getElementById('reasoning').textContent=d.reasoning;
+   document.getElementById('notes').textContent=d.size_notes;
+   document.getElementById('next').textContent=d.next_measurement;
+   document.getElementById('caveats').textContent=d.caveats;
+   result.style.display='block'; result.scrollIntoView({behavior:'smooth'});
+ }catch(err){alert(err.message)}
+ finally{btn.disabled=false;btn.textContent='Find My Size'}
+});
+</script>
+</body>
+</html>
