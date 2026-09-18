@@ -1,62 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Fit Consultant</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Fit Consultant</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111827}
+main{max-width:600px;margin:auto;padding:20px}
+h1{text-align:center;margin:15px 0 5px}
+.sub{text-align:center;color:#6b7280;margin-bottom:20px}
+.card{background:white;padding:20px;border-radius:16px;margin-bottom:16px;box-shadow:0 3px 15px #ddd}
+label{display:block;font-weight:bold;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:9px;font-size:16px}
+textarea{height:100px}
+button{width:100%;padding:15px;margin-top:18px;border:0;border-radius:10px;background:#111827;color:white;font-size:17px;font-weight:bold}
+#loading,#result,#error{display:none}
+.size{text-align:center;font-size:40px;font-weight:bold}
+.error{background:#fee2e2;color:#991b1b;padding:12px;border-radius:9px}
+small{color:#6b7280}
+</style>
+</head>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<body>
+<main>
+<h1>AI Fit Consultant</h1>
+<p class="sub">AI-assisted clothing size recommendation</p>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      color: #111827;
-    }
+<div class="card">
+<form id="form">
 
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
+<label>Clothing category</label>
+<select name="category" required>
+<option value="">Select category</option>
+<option>T-Shirt</option>
+<option>Shirt</option>
+<option>Hoodie</option>
+<option>Jacket</option>
+<option>Jeans</option>
+<option>Trousers</option>
+<option>Dress</option>
+<option>Other</option>
+</select>
 
-    .header {
-      text-align: center;
-      padding: 20px 10px;
-    }
+<label>Height (cm)</label>
+<input name="height_cm" type="number" placeholder="175" required>
 
-    .header h1 {
-      margin: 0;
-      font-size: 30px;
-    }
+<label>Weight (kg) - optional</label>
+<input name="weight_kg" type="number" placeholder="70">
 
-    .header p {
-      color: #6b7280;
-      margin-top: 8px;
-    }
+<label>Preferred fit</label>
+<select name="fit_preference" required>
+<option value="">Select fit</option>
+<option>slim</option>
+<option>regular</option>
+<option>relaxed</option>
+<option>oversized</option>
+</select>
 
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-    }
+<label>Your photo</label>
+<input name="photo" type="file" accept="image/*" required>
+<small>Use a clear full-body photo.</small>
 
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 7px;
-      margin-top: 16px;
-    }
+<label>Size chart</label>
+<textarea name="size_chart" required placeholder="S = 36-38
+M = 38-40
+L = 40-42
+XL = 42-44"></textarea>
 
-    label:first-child {
-      margin-top: 0;
-    }
+<label>
+<input id="demo" type="checkbox" style="width:auto">
+ Demo mode
+</label>
 
-    input,
-    select,
-    textarea
+<button id="btn">Find My Size</button>
+</form>
+
+<p id="loading">Analyzing...</p>
+<p id="error" class="error"></p>
+</div>
+
+<div id="result" class="card">
+<h2>Recommendation</h2>
+<div id="size" class="size"></div>
+<p><b>Confidence:</b> <span id="confidence"></span></p>
+<p><b>Fit summary:</b> <span id="summary"></span></p>
+<p><b>Reasoning:</b> <span id="reason"></span></p>
+<p><b>Size notes:</b> <span id="notes"></span></p>
+<p><b>Caveats:</b> <span id="caveats"></span></p>
+<p><b>Next measurement:</b> <span id="next"></span></p>
+</div>
+
+<p class="sub"><small>This is an AI-assisted recommendation and does not guarantee fit.</small></p>
+</main>
+
+<script>
+const f=document.getElementById("form");
+
+f.onsubmit=async e=>{
+e.preventDefault();
+
+const btn=document.getElementById("btn");
+const loading=document.getElementById("loading");
+const error=document.getElementById("error");
+const result=document.getElementById("result");
+
+btn.disabled=true;
+loading.style.display="block";
+error.style.display="none";
+result.style.display="none";
+
+try{
+const data=new FormData(f);
+data.set("demo",document.getElementById("demo").checked?"true":"false");
+
+const r=await fetch("/api/recommend",{method:"POST",body:data});
+const j=await r.json();
+
+if(!r.ok)throw new Error(j.detail||"Request failed");
+
+document.getElementById("size").textContent=j.recommended_size||"-";
+document.getElementById("confidence").textContent=j.confidence||"-";
+document.getElementById("summary").textContent=j.fit_summary||"-";
+document.getElementById("reason").textContent=j.reasoning||"-";
+document.getElementById("notes").textContent=j.size_notes||"-";
+document.getElementById("caveats").textContent=j.caveats||"-";
+document.getElementById("next").textContent=j.next_measurement||"-";
+
+result.style.display="block";
+result.scrollIntoView({behavior:"smooth"});
+}catch(err){
+error.textContent=err.message;
+error.style.display="block";
+}finally{
+loading.style.display="none";
+btn.disabled=false;
+}
+};
+</script>
+</body>
+  </html>
