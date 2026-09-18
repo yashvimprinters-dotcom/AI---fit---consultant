@@ -14,7 +14,7 @@ label{display:block;font-size:13px;font-weight:750;margin:14px 0 7px}input,selec
 .toggle{display:flex;align-items:center;gap:10px;margin:12px 0;color:#555;font-size:14px}.toggle input{width:auto}
 button{width:100%;border:0;border-radius:12px;padding:15px;background:#111;color:#fff;font-size:16px;font-weight:800;margin-top:15px}button:disabled{opacity:.5}
 .result{display:none}.size{font-size:44px;font-weight:900}.confidence{display:inline-block;padding:7px 10px;background:#eef0f2;border-radius:999px;font-weight:700;margin-top:4px}.section{margin-top:18px}.muted{color:#666;font-size:13px;line-height:1.45}
-.badge{display:inline-block;padding:6px 9px;border-radius:999px;background:#f0f1f3;font-size:12px;margin:3px}
+.hint{padding:12px;border-radius:12px;background:#f5f6f7;margin-top:8px;font-size:13px;color:#555;line-height:1.45}.optional{font-weight:500;color:#777}
 footer{color:#777;font-size:12px;text-align:center;padding:20px}
 @media(max-width:620px){.grid{grid-template-columns:1fr}header h1{font-size:27px}}
 </style>
@@ -23,21 +23,30 @@ footer{color:#777;font-size:12px;text-align:center;padding:20px}
 <header>
   <div class="brand">AI FIT CONSULTANT</div>
   <h1>Find the size that fits you better.</h1>
-  <p>Photo + your details + the seller's own size chart. Advisory recommendation, not a guarantee.</p>
+  <p>Use the seller's real chart plus your measurements. A photo adds visual context, but it is not treated as an exact body-measurement tool.</p>
 </header>
 <main>
 <section class="card">
 <form id="form">
   <div class="photo">
-    <strong>📷 Full-body photo</strong>
+    <strong>📷 Your full-body photo</strong>
     <div class="muted">Use a clear, front-facing photo with the clothing area visible.</div>
     <input name="photo" type="file" accept="image/*" required>
   </div>
 
   <div class="grid">
     <div><label>Height (cm)</label><input name="height_cm" type="number" min="80" max="250" placeholder="e.g. 175" required></div>
-    <div><label>Weight (kg) — optional</label><input name="weight_kg" type="number" min="20" max="250" placeholder="e.g. 70"></div>
+    <div><label>Weight (kg) <span class="optional">— optional</span></label><input name="weight_kg" type="number" min="20" max="250" placeholder="e.g. 70"></div>
   </div>
+
+  <label>Your measurements <span class="optional">— optional, but strongly recommended</span></label>
+  <div class="grid">
+    <div><input name="chest_cm" type="number" min="30" max="200" step="0.1" placeholder="Chest (cm)"></div>
+    <div><input name="waist_cm" type="number" min="30" max="200" step="0.1" placeholder="Waist (cm)"></div>
+    <div><input name="shoulder_cm" type="number" min="20" max="100" step="0.1" placeholder="Shoulder (cm)"></div>
+    <div><input name="inseam_cm" type="number" min="30" max="150" step="0.1" placeholder="Inseam (cm)"></div>
+  </div>
+  <div class="hint">For a T-shirt, chest circumference is usually the most useful extra measurement. Only enter measurements you actually measured.</div>
 
   <div class="grid">
     <div><label>Category</label><select name="category">
@@ -50,12 +59,23 @@ footer{color:#777;font-size:12px;text-align:center;padding:20px}
   </div>
 
   <label>Seller's size chart</label>
-  <textarea name="size_chart" required placeholder="Example:
+  <textarea name="size_chart" placeholder="Option 1 — type the actual chart:
 S — chest 36 in, length 27 in
 M — chest 38 in, length 28 in
 L — chest 40 in, length 29 in
 XL — chest 42 in, length 30 in"></textarea>
-  <div class="muted">This is critical. Use the brand/store's actual chart, not a generic chart.</div>
+  <div class="muted">Or upload a screenshot/photo of the seller's chart below. You can use either or both.</div>
+
+  <label>Seller chart screenshot <span class="optional">— optional if you typed the chart</span></label>
+  <input name="size_chart_image" type="file" accept="image/*">
+
+  <label>What do the seller's numbers measure?</label>
+  <select name="chart_measurement_type">
+    <option>Unknown — let AI assess the chart</option>
+    <option>Body measurement</option>
+    <option>Garment measurement</option>
+  </select>
+  <div class="hint">If the seller doesn't say, leave this as Unknown. The AI will flag the ambiguity instead of assuming.</div>
 
   <label class="toggle"><input name="demo" type="checkbox"> Demo Mode — test the interface without using AI</label>
   <button id="go">Find My Size</button>
@@ -75,9 +95,9 @@ XL — chest 42 in, length 30 in"></textarea>
 
 <section class="card">
 <strong>Privacy & accuracy</strong>
-<p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates and should be validated against real purchases, exchanges and returns before commercial use.</p>
+<p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates and should be validated against the seller's actual measurements, fit details, and return/exchange policy before purchase.</p>
 </section>
-<footer>AI Fit Consultant v3 • Validation MVP</footer>
+<footer>AI Fit Consultant v5 • Validation MVP</footer>
 </main>
 <script>
 const form=document.getElementById('form'), btn=document.getElementById('go'), result=document.getElementById('result');
@@ -87,7 +107,7 @@ form.addEventListener('submit',async e=>{
    const fd=new FormData(form);
    const r=await fetch('/api/recommend',{method:'POST',body:fd});
    const d=await r.json();
-   if(!r.ok) throw new Error((d.error||'Something went wrong') + (d.details ? '\n\n' + d.details : ''));
+   if(!r.ok) throw new Error((d.error||'Something went wrong') + (d.details ? '\n\n'+d.details : ''));
    document.getElementById('size').textContent=d.recommended_size;
    document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%';
    document.getElementById('summary').textContent=d.fit_summary;
