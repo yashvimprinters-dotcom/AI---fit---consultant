@@ -117,7 +117,7 @@ data.set("demo",document.getElementById("demo").checked?"true":"false");
 const r=await fetch("/api/recommend",{method:"POST",body:data});
 const j=await r.json();
 
-if(!r.ok)throw new Error(j.detail||"Request failed");
+if(!r.ok)throw new Error(j.error||j.detail||j.details||"Request failed");
 
 document.getElementById("size").textContent=j.recommended_size||"-";
 document.getElementById("confidence").textContent=j.confidence||"-";
