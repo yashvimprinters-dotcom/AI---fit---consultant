@@ -7,6 +7,26 @@
 <title>FITORA • Your fit. Your style. Your look.</title>
 <style>
 :root{--ink:#121212;--muted:#6f737b;--line:#e7e8ec;--soft:#f7f7f9;--card:#fff;--accent:#7c3aed;--accent2:#ec4899;--green:#10b981;--shadow:0 14px 45px rgba(20,20,35,.08)}
+/* v24 adaptive FITORA themes */
+body.v24-blue{--accent:#2563eb;--accent2:#38bdf8;--soft:#f3f8ff;background:linear-gradient(180deg,#eef6ff 0,#f7f9fc 360px,#f4f7fb 100%)}
+body.v24-pink{--accent:#7c3aed;--accent2:#ec4899;--soft:#faf4ff;background:linear-gradient(180deg,#f7efff 0,#faf7fc 360px,#f6f5fa 100%)}
+body.v24-neutral{--accent:#4f46e5;--accent2:#8b5cf6;--soft:#f5f6fb;background:linear-gradient(180deg,#f1f3f9 0,#f8f9fb 360px,#f4f5f7 100%)}
+body.v24-blue .nav-tab.active,body.v24-blue button:not(.secondary-btn){background:linear-gradient(135deg,#2563eb,#38bdf8)}
+body.v24-pink .nav-tab.active,body.v24-pink button:not(.secondary-btn){background:linear-gradient(135deg,#7c3aed,#ec4899)}
+body.v24-neutral .nav-tab.active,body.v24-neutral button:not(.secondary-btn){background:linear-gradient(135deg,#4f46e5,#8b5cf6)}
+body.v24-blue .section-number{background:linear-gradient(135deg,#1d4ed8,#38bdf8)}
+body.v24-pink .section-number{background:linear-gradient(135deg,#7c3aed,#ec4899)}
+body.v24-neutral .section-number{background:linear-gradient(135deg,#4f46e5,#8b5cf6)}
+body.v24-blue header{background:linear-gradient(135deg,#071426 0%,#0b1f3a 55%,#12345b 100%)}
+body.v24-pink header{background:linear-gradient(135deg,#10051f 0%,#24103e 55%,#391342 100%)}
+body.v24-neutral header{background:linear-gradient(135deg,#10131f 0%,#1d2340 55%,#31265b 100%)}
+body.v24-blue header:before{background:#2563eb}body.v24-blue header:after{background:#38bdf8}
+body.v24-pink header:before{background:#7c3aed}body.v24-pink header:after{background:#ec4899}
+body.v24-neutral header:before{background:#4f46e5}body.v24-neutral header:after{background:#8b5cf6}
+body.v24-blue .feature-mini,body.v24-blue .card{box-shadow:0 14px 45px rgba(37,99,235,.08)}
+body.v24-pink .feature-mini,body.v24-pink .card{box-shadow:0 14px 45px rgba(124,58,237,.08)}
+body.v24-neutral .feature-mini,body.v24-neutral .card{box-shadow:0 14px 45px rgba(79,70,229,.07)}
+
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#f6f3ff 0,#f7f8fb 360px,#f4f5f7 100%);color:var(--ink)}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#101014 0%,#191526 55%,#251334 100%);color:#fff;padding:22px 18px 30px;border-radius:0 0 30px 30px;box-shadow:0 16px 45px rgba(20,12,35,.18)}
 header:before,header:after{content:"";position:absolute;border-radius:50%;filter:blur(2px);opacity:.45;pointer-events:none}header:before{width:220px;height:220px;background:#7c3aed;right:-80px;top:-110px}header:after{width:180px;height:180px;background:#ec4899;left:-90px;bottom:-120px}
@@ -133,6 +153,13 @@ button{border-radius:16px}
   .v23-trust-item span{font-size:9px}
 }
 
+
+
+/* v25: retention through useful daily utility, not extra complexity */
+.v25-daily{margin:14px 0 18px;padding:18px;border-radius:26px;background:linear-gradient(135deg,#17102a,#31105a 58%,#7b1fc8);color:#fff;box-shadow:0 14px 34px rgba(75,28,125,.20);position:relative;overflow:hidden}
+.v25-daily:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-60px;top:-80px;background:rgba(255,255,255,.10)}
+.v25-daily-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.v25-daily-kicker{font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.78}.v25-daily h3{margin:5px 0 4px;font-size:21px}.v25-daily p{margin:0;color:#e9dff4;font-size:12px;line-height:1.45}.v25-daily-pill{padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);font-size:11px;white-space:nowrap}.v25-idea{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:13px 0}.v25-idea span{padding:9px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.11);font-size:11px}.v25-daily button{margin:0!important;width:auto!important;padding:10px 14px!important;background:#fff!important;color:#5513a7!important;border:0!important;box-shadow:none!important;font-size:12px!important}.v25-return{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px;padding:14px 16px;border:1px solid #e8e2f0;border-radius:20px;background:#fff}.v25-return b{font-size:13px}.v25-return small{display:block;color:#747780;font-size:11px;margin-top:3px}.v25-return button{margin:0!important;width:auto!important;padding:9px 12px!important;font-size:11px!important}.v25-occasions{display:flex;gap:7px;overflow:auto;padding-bottom:2px;margin:0 0 14px}.v25-occasion{white-space:nowrap;border:1px solid #e2dce9;background:#fff;color:#2a2530;border-radius:999px;padding:9px 12px;font-size:11px;font-weight:800;cursor:pointer}.v25-occasion.active{background:#f1e5ff;border-color:#8d35df;color:#6414ae}.v25-mini-title{font-size:12px;font-weight:900;margin:0 0 7px}
+@media(max-width:520px){.v25-idea span{font-size:10px;padding:8px 6px}.v25-daily{padding:16px}.v25-daily h3{font-size:19px}}
 </style>
 </head>
 <body>
@@ -160,6 +187,21 @@ button{border-radius:16px}
   <button type="button" class="quick-card" data-scroll="styleSection"><span class="quick-icon">✨</span><span><b>Build My Look</b><small>Choose colours, clothes & extras</small></span><span class="quick-arrow">›</span></button>
   <button type="button" class="quick-card" data-scroll="v17ExactTryOn"><span class="quick-icon">📸</span><span><b>Try It On</b><small>See your selected look on your photo</small></span><span class="quick-arrow">›</span></button>
 </div>
+<div class="v25-daily" id="v25DailyCard">
+  <div class="v25-daily-top"><div><div class="v25-daily-kicker">FITORA • TODAY</div><h3 id="v25DailyTitle">Your style idea for today</h3><p id="v25DailyText">A quick outfit idea based on today's occasion.</p></div><span class="v25-daily-pill" id="v25DailyDay">Today</span></div>
+  <div class="v25-idea"><span id="v25IdeaTop">👕 Top</span><span id="v25IdeaBottom">👖 Bottom</span><span id="v25IdeaShoes">👟 Shoes</span></div>
+  <button type="button" id="v25UseIdea">✨ Use this idea</button>
+</div>
+<div class="v25-mini-title">What are you dressing for?</div>
+<div class="v25-occasions" id="v25Occasions" aria-label="Choose an occasion">
+  <button class="v25-occasion active" data-occ="Everyday casual">Everyday</button>
+  <button class="v25-occasion" data-occ="Work / smart casual">Work</button>
+  <button class="v25-occasion" data-occ="Party / evening">Party</button>
+  <button class="v25-occasion" data-occ="Wedding / festive">Wedding</button>
+  <button class="v25-occasion" data-occ="Date night">Date night</button>
+  <button class="v25-occasion" data-occ="Travel / outdoor">Travel</button>
+</div>
+<div class="v25-return" id="v25ReturnCard" style="display:none"><div><b id="v25ReturnTitle">Continue where you left off</b><small id="v25ReturnText"></small></div><button type="button" class="secondary-btn" id="v25ReturnBtn">Continue</button></div>
 <div class="customer-menu" id="customerMenu" aria-hidden="true">
   <div class="customer-menu-backdrop" data-close-menu></div>
   <div class="customer-menu-panel">
@@ -314,10 +356,10 @@ XL — chest 42 in, length 30 in"></textarea>
 <section class="card"><strong>Privacy & accuracy</strong><p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates. Visual try-on images are generated previews and may not represent exact garment fit, fabric or measurements.</p></section>
 
 <!-- v19 customer tools -->
-<div class="modal-backdrop" id="accountModal"><div class="modal"><div class="modal-head"><h3>👤 Your profile</h3><button class="modal-close" type="button" data-close="accountModal">×</button></div><p class="muted">Create a simple profile so your saved looks and preferences are easier to manage on this device.</p><label>Your name</label><input id="profileName" type="text" placeholder="e.g. Ashish"><label>Email</label><input id="profileEmail" type="email" placeholder="you@example.com"><div class="hint">Prototype note: this version keeps profile details in this browser. Cloud sign-in can be connected later without changing the customer flow.</div><div class="modal-actions"><button type="button" id="profileSave">Create profile</button><button type="button" class="secondary-btn" data-close="accountModal">Cancel</button></div></div></div>
+<div class="modal-backdrop" id="accountModal"><div class="modal"><div class="modal-head"><h3>👤 Your profile</h3><button class="modal-close" type="button" data-close="accountModal">×</button></div><p class="muted">Create a simple profile so your saved looks and preferences are easier to manage on this device.</p><label>Your name</label><input id="profileName" type="text" placeholder="e.g. Ashish"><label>Email</label><input id="profileEmail" type="email" placeholder="you@example.com"><label>Fashion section</label><select id="profileGender"><option value="unisex">🧑 Unisex</option><option value="male">👨 Men</option><option value="female">👩 Women</option></select><div class="hint">Your selection sets a comfortable starting colour theme. You can change the theme anytime in Settings.</div><div class="hint">Prototype note: this version keeps profile details in this browser. Cloud sign-in can be connected later without changing the customer flow.</div><div class="modal-actions"><button type="button" id="profileSave">Create profile</button><button type="button" class="secondary-btn" data-close="accountModal">Cancel</button></div></div></div>
 <div class="modal-backdrop" id="savedModal"><div class="modal"><div class="modal-head"><h3>♡ Saved looks</h3><button class="modal-close" type="button" data-close="savedModal">×</button></div><p class="muted">Your saved previews stay on this device.</p><div id="savedGrid" class="saved-grid"></div><button type="button" class="secondary-btn" id="clearSaved">Clear saved looks</button></div></div>
 <div class="modal-backdrop" id="feedbackModal"><div class="modal"><div class="modal-head"><h3>💬 Tell us what you think</h3><button class="modal-close" type="button" data-close="feedbackModal">×</button></div><p class="muted">A quick message helps improve the customer experience.</p><label>How was your experience?</label><select id="feedbackRating"><option>Very good</option><option>Good</option><option>Okay</option><option>Needs improvement</option></select><label>Your feedback</label><textarea id="feedbackText" placeholder="What was easy, confusing, missing or useful?"></textarea><button type="button" id="sendFeedback">Send feedback</button></div></div>
-<div class="modal-backdrop" id="settingsModal"><div class="modal"><div class="modal-head"><h3>⚙️ App settings</h3><button class="modal-close" type="button" data-close="settingsModal">×</button></div><div class="setting-row"><div><b>Dark mode</b><small>Use a darker interface.</small></div><input class="switch" id="darkModeToggle" type="checkbox"></div><div class="setting-row"><div><b>Remember last tab</b><small>Open the app where you left off.</small></div><input class="switch" id="rememberTabToggle" type="checkbox" checked></div><div class="setting-row"><div><b>Show helpful tips</b><small>Keep short guidance messages visible.</small></div><input class="switch" id="tipsToggle" type="checkbox" checked></div><button type="button" class="secondary-btn" data-close="settingsModal">Done</button></div></div>
+<div class="modal-backdrop" id="settingsModal"><div class="modal"><div class="modal-head"><h3>⚙️ App settings</h3><button class="modal-close" type="button" data-close="settingsModal">×</button></div><div class="setting-row"><div><b>Dark mode</b><small>Use a darker interface.</small></div><input class="switch" id="darkModeToggle" type="checkbox"></div><label>Appearance</label><select id="themeSelect"><option value="auto">✨ Automatic</option><option value="pink">💜 FITORA Purple / Pink</option><option value="blue">💙 Ocean Blue</option><option value="neutral">🤍 Neutral</option></select><div class="setting-row"><div><b>Remember last tab</b><small>Open the app where you left off.</small></div><input class="switch" id="rememberTabToggle" type="checkbox" checked></div><div class="setting-row"><div><b>Show helpful tips</b><small>Keep short guidance messages visible.</small></div><input class="switch" id="tipsToggle" type="checkbox" checked></div><button type="button" class="secondary-btn" data-close="settingsModal">Done</button></div></div>
 <div class="toast" id="toast"></div>
 <nav class="bottom-nav" aria-label="Main navigation">
   <button type="button" class="active" id="bottomHome"><span class="bn-icon">⌂</span>Home</button>
@@ -711,22 +753,27 @@ root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dat
  const safeGet=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
  const safeSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
  let profile=safeGet(KEY.profile,null); let saved=safeGet(KEY.saved,[]);
- let settings=Object.assign({dark:false,rememberTab:true,tips:true},safeGet(KEY.settings,{}));
+ let settings=Object.assign({dark:false,rememberTab:true,tips:true,theme:'auto'},safeGet(KEY.settings,{}));
  function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
  function openModal(id){$(id)?.classList.add('open')} function closeModal(id){$(id)?.classList.remove('open')}
  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
  document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
- function renderProfile(){if(!profile){$('accountLabel').textContent='Sign up';$('profileChip').classList.remove('show');return} $('accountLabel').textContent='Profile';$('profileChip').classList.add('show');$('profileChipText').textContent='Hi, '+profile.name;$('profileDot').textContent=(profile.name||'Y').trim().charAt(0).toUpperCase();$('profileName').value=profile.name||'';$('profileEmail').value=profile.email||'';}
+ function renderProfile(){if(!profile){$('accountLabel').textContent='Sign up';$('profileChip').classList.remove('show');return} $('accountLabel').textContent='Profile';$('profileChip').classList.add('show');$('profileChipText').textContent='Hi, '+profile.name;$('profileDot').textContent=(profile.name||'Y').trim().charAt(0).toUpperCase();$('profileName').value=profile.name||'';$('profileEmail').value=profile.email||'';$('profileGender').value=profile.gender||'unisex';}
  function renderSaved(){ $('savedCount').textContent=saved.length; const g=$('savedGrid'); if(!saved.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1">No saved looks yet.<br>Generate a look and tap <b>♡ Save look</b>.</div>';return;} g.innerHTML=saved.map((x,i)=>`<div class="saved-card">${x.image?`<img src="${x.image}" alt="Saved look">`:''}<div class="saved-card-body"><b>${escapeHtml(x.color||'Look')} • ${escapeHtml(x.outfit||'Style')}</b><small>${escapeHtml(x.bottom||'')} ${x.shoes?'• '+escapeHtml(x.shoes):''}</small><button type="button" class="secondary-btn remove-saved" data-i="${i}">Remove</button></div></div>`).join(''); g.querySelectorAll('.remove-saved').forEach(b=>b.addEventListener('click',()=>{saved.splice(Number(b.dataset.i),1);safeSet(KEY.saved,saved);renderSaved();toast('Look removed');}));}
- function applySettings(){ $('darkModeToggle').checked=!!settings.dark; $('rememberTabToggle').checked=!!settings.rememberTab; $('tipsToggle').checked=!!settings.tips; document.body.classList.toggle('v19-dark',!!settings.dark);}
+ function applyTheme(){
+ const theme=settings.theme==='auto'?(profile?.gender==='male'?'blue':profile?.gender==='female'?'pink':'neutral'):settings.theme;
+ document.body.classList.remove('v24-blue','v24-pink','v24-neutral');
+ document.body.classList.add('v24-'+theme);
+}
+ function applySettings(){ $('darkModeToggle').checked=!!settings.dark; $('rememberTabToggle').checked=!!settings.rememberTab; $('tipsToggle').checked=!!settings.tips; $('themeSelect').value=settings.theme||'auto'; document.body.classList.toggle('v19-dark',!!settings.dark); applyTheme();}
  $('accountBtn').addEventListener('click',()=>{renderProfile();openModal('accountModal')});
  $('savedBtn').addEventListener('click',()=>{renderSaved();openModal('savedModal')});
  $('feedbackBtn').addEventListener('click',()=>openModal('feedbackModal'));
  $('settingsBtn').addEventListener('click',()=>openModal('settingsModal'));
- $('profileSave').addEventListener('click',()=>{const name=$('profileName').value.trim(),email=$('profileEmail').value.trim();if(!name||!email){toast('Please enter your name and email');return}profile={name,email};safeSet(KEY.profile,profile);renderProfile();closeModal('accountModal');toast('Profile created on this device');});
+ $('profileSave').addEventListener('click',()=>{const name=$('profileName').value.trim(),email=$('profileEmail').value.trim(),gender=$('profileGender').value;if(!name||!email){toast('Please enter your name and email');return}profile={name,email,gender};safeSet(KEY.profile,profile);if(settings.theme==='auto')applyTheme();renderProfile();closeModal('accountModal');toast('Profile created — your theme is ready');});
  $('sendFeedback').addEventListener('click',()=>{const text=$('feedbackText').value.trim(),rating=$('feedbackRating').value;if(!text){toast('Please add a short message');return} const feedback=safeGet('afc_feedback_v1',[]);feedback.push({rating,text,at:new Date().toISOString()});safeSet('afc_feedback_v1',feedback);$('feedbackText').value='';closeModal('feedbackModal');toast('Thanks — feedback saved');});
  $('clearSaved').addEventListener('click',()=>{if(!saved.length){toast('Nothing to clear');return}if(confirm('Clear all saved looks on this device?')){saved=[];safeSet(KEY.saved,saved);renderSaved();toast('Saved looks cleared')}});
- ['darkModeToggle','rememberTabToggle','tipsToggle'].forEach(id=>$(id).addEventListener('change',()=>{settings={dark:$('darkModeToggle').checked,rememberTab:$('rememberTabToggle').checked,tips:$('tipsToggle').checked};safeSet(KEY.settings,settings);applySettings();toast('Settings saved')}));
+ ['darkModeToggle','rememberTabToggle','tipsToggle','themeSelect'].forEach(id=>$(id).addEventListener('change',()=>{settings={dark:$('darkModeToggle').checked,rememberTab:$('rememberTabToggle').checked,tips:$('tipsToggle').checked,theme:$('themeSelect').value};safeSet(KEY.settings,settings);applySettings();toast('Settings saved')}));
  function saveCurrentLook(){const img=$('v17_image'); const legacy=$('tryOnImage'); const src=(img&&img.style.display!=='none'&&img.src)||((legacy&&legacy.style.display!=='none'&&legacy.src)||''); if(!src){toast('Generate a preview first');return} const item={image:src,color:window.selectedColor||document.getElementById('chosenColorLabel')?.textContent||'Look',outfit:window.selectedOutfit||document.getElementById('chosenOutfitLabel')?.textContent||'Style',bottom:document.getElementById('bottomColor')?.value||'',shoes:document.getElementById('footwear')?.value||'',savedAt:new Date().toISOString()}; if(saved.some(x=>x.color===item.color&&x.outfit===item.outfit)){toast('This look is already saved');return} saved.unshift(item);saved=saved.slice(0,12); if(!safeSet(KEY.saved,saved)){toast('Storage is full — try removing older looks');return} renderSaved();toast('Look saved ❤️');}
  $('saveLookBtn')?.addEventListener('click',saveCurrentLook);
  const navTabs=[...document.querySelectorAll('.nav-tab')]; const savedTab=localStorage.getItem('afc_last_tab_v1'); if(settings.rememberTab&&savedTab){const t=navTabs.find(x=>x.dataset.target===savedTab); if(t)t.click();}
@@ -759,6 +806,44 @@ document.getElementById('heroAccountBtn')?.addEventListener('click',()=>document
 document.getElementById('bottomSaved')?.addEventListener('click',()=>document.getElementById('savedBtn')?.click());
 document.getElementById('bottomAccount')?.addEventListener('click',()=>document.getElementById('moreMenuBtn')?.click());
 document.getElementById('bottomHome')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
+
+<script>
+// v25: useful repeat visits — daily style idea, quick occasions, and resume state.
+(function(){
+ const $=id=>document.getElementById(id);
+ const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+ const set=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+ const ideas=[
+  {title:'Easy everyday look',text:'Simple, comfortable and easy to repeat.',top:'👕 Clean tee',bottom:'👖 Straight jeans',shoes:'👟 White sneakers',outfit:'Casual'},
+  {title:'Polished work look',text:'A smart combination for a normal workday.',top:'👔 Oxford shirt',bottom:'👖 Tailored trousers',shoes:'👞 Loafers',outfit:'Smart casual'},
+  {title:'Weekend refresh',text:'Relaxed pieces with a little personality.',top:'🧥 Overshirt',bottom:'👖 Chinos',shoes:'👟 Retro sneakers',outfit:'Weekend casual'},
+  {title:'Evening ready',text:'A sharper look without making it complicated.',top:'👔 Polo shirt',bottom:'👖 Dark trousers',shoes:'👞 Loafers',outfit:'Evening'},
+  {title:'Travel light',text:'Comfort-first pieces that still look put together.',top:'👕 T-shirt',bottom:'👖 Chinos',shoes:'👟 Sneakers',outfit:'Travel'}
+ ];
+ const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+ const d=new Date(); const idx=(d.getDay()+d.getDate())%ideas.length; const idea=ideas[idx];
+ $('v25DailyTitle').textContent=idea.title; $('v25DailyText').textContent=idea.text; $('v25DailyDay').textContent=dayNames[d.getDay()];
+ $('v25IdeaTop').textContent=idea.top; $('v25IdeaBottom').textContent=idea.bottom; $('v25IdeaShoes').textContent=idea.shoes;
+ $('v25UseIdea').addEventListener('click',()=>{
+   const occ=idea.outfit==='Smart casual'?'Work / smart casual':idea.outfit==='Evening'?'Party / evening':idea.outfit==='Travel'?'Travel / outdoor':'Everyday casual';
+   const occSel=document.querySelector('[name="occasion"]'); if(occSel)occSel.value=occ;
+   const custom=$('customOutfit'); if(custom){custom.value=idea.top.replace(/^\S+\s/,'')+' + '+idea.bottom.replace(/^\S+\s/,'')+' + '+idea.shoes.replace(/^\S+\s/,''); custom.dispatchEvent(new Event('input',{bubbles:true}));}
+   document.getElementById('styleSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+   try{localStorage.setItem('fitora_last_action_v25','daily-idea')}catch(e){}
+ });
+ $('v25Occasions')?.addEventListener('click',e=>{const b=e.target.closest('[data-occ]');if(!b)return;document.querySelectorAll('.v25-occasion').forEach(x=>x.classList.remove('active'));b.classList.add('active');const s=document.querySelector('[name="occasion"]');if(s)s.value=b.dataset.occ;document.getElementById('styleSection')?.scrollIntoView({behavior:'smooth',block:'start'});});
+ const last=get('fitora_last_visit_v25',null); const saved=get('afc_saved_v1',[]);
+ if(last){
+   $('v25ReturnCard').style.display='flex';
+   $('v25ReturnText').textContent=saved.length?`You have ${saved.length} saved look${saved.length===1?'':'s'} ready to revisit.`:'Continue your last FITORA session.';
+   $('v25ReturnBtn').addEventListener('click',()=>{
+     if(saved.length){document.getElementById('savedBtn')?.click();}
+     else{document.getElementById('styleSection')?.scrollIntoView({behavior:'smooth',block:'start'});}
+   });
+ }
+ set('fitora_last_visit_v25',{at:new Date().toISOString(),path:location.pathname});
+})();
 </script>
 </body>
 </html>
