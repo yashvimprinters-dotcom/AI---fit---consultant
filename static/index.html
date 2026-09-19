@@ -542,64 +542,93 @@ document.getElementById('shareTryOn').addEventListener('click',async()=>{
 
 <!-- V14_PERSONAL_STYLIST -->
 <section id="v14-personal-stylist" class="v14-stylist">
-  <h2>✨ AI Personal Stylist</h2>
-  <p>Build three complete looks from your chosen colour, outfit, footwear, accessories and occasion.</p>
-  <div class="v14-grid">
-    <label>Top colour <input id="v14_top_color" value="Navy"></label>
-    <label>Outfit <input id="v14_outfit" value="Smart casual"></label>
-    <label>Bottom colour <input id="v14_bottom_color" value="Beige"></label>
-    <label>Occasion <select id="v14_occasion">
-      <option>Casual</option><option>Smart Casual</option><option>Formal</option><option>Business</option>
-      <option>Party</option><option>Festive</option><option>Wedding</option><option>Travel</option><option>Date</option>
-    </select></label>
-    <label>Footwear <input id="v14_footwear" value="AI choose"></label>
-    <label>Accessories <input id="v14_accessory" value="AI choose"></label>
+  <div class="v14-head">
+    <div>
+      <div class="v14-eyebrow">✨ FITORA PERSONAL STYLIST</div>
+      <h2>Build 3 complete looks</h2>
+      <p>Compare complete outfits at a glance, then try one on without starting over.</p>
+    </div>
+    <div class="v14-count" id="v14_count">3 looks</div>
   </div>
+  <details class="v14-preferences">
+    <summary>Style preferences</summary>
+    <div class="v14-grid">
+      <label>Top colour <input id="v14_top_color" value="Navy" maxlength="40"></label>
+      <label>Outfit <input id="v14_outfit" value="Smart casual" maxlength="80"></label>
+      <label>Bottom colour <input id="v14_bottom_color" value="Beige" maxlength="40"></label>
+      <label>Occasion <select id="v14_occasion"><option>Casual</option><option>Smart Casual</option><option>Formal</option><option>Business</option><option>Party</option><option>Festive</option><option>Wedding</option><option>Travel</option><option>Date</option></select></label>
+      <label>Footwear <input id="v14_footwear" value="AI choose" maxlength="80"></label>
+      <label>Accessories <input id="v14_accessory" value="AI choose" maxlength="100"></label>
+    </div>
+  </details>
   <button type="button" id="v14_build">✨ Build 3 complete looks</button>
-  <div id="v14_results"></div>
+  <div id="v14_status" class="v14-status" aria-live="polite"></div>
+  <div id="v14_results" class="v14-results"></div>
 </section>
 <style>
-.v14-stylist{margin-top:24px;padding:18px;border:1px solid #ddd;border-radius:16px}
-.v14-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0}
-.v14-grid label{font-weight:600}.v14-grid input,.v14-grid select{display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:9px}
-.v14-look{border:1px solid #ddd;border-radius:14px;padding:14px;margin:12px 0}
-.v14-use{padding:9px 12px;border-radius:9px;border:1px solid #999;cursor:pointer}
+.v14-stylist{margin-top:24px;padding:18px;border:1px solid #e4e4ea;border-radius:22px;background:linear-gradient(180deg,#fbfaff,#fff);box-shadow:0 12px 34px rgba(40,25,70,.07)}
+.v14-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.v14-eyebrow{font-size:11px;font-weight:900;letter-spacing:.08em;color:#7446df}.v14-head h2{margin:4px 0 5px;font-size:23px}.v14-head p{margin:0;color:#666;line-height:1.4;font-size:13px}.v14-count{white-space:nowrap;padding:8px 10px;border-radius:999px;background:#f1ebff;color:#6334c9;font-size:11px;font-weight:900}
+.v14-preferences{margin:12px 0}.v14-preferences summary{cursor:pointer;font-weight:800;font-size:13px;color:#333;padding:9px 0}.v14-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 4px}.v14-grid label{font-weight:700;font-size:12px;color:#444}.v14-grid input,.v14-grid select{display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:6px;border:1px solid #dddde5;border-radius:10px;background:#fff;font:inherit;font-size:13px}
+.v14-status{min-height:18px;font-size:12px;color:#666;margin:9px 2px}.v14-results{display:grid;gap:14px;margin-top:8px}
+.v14-look{overflow:hidden;border:1px solid #e2e2e8;border-radius:20px;background:#fff;box-shadow:0 8px 24px rgba(25,20,40,.06)}
+.v14-look-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 16px 10px}.v14-look-top h3{margin:0;font-size:19px}.v14-tag{font-size:10px;font-weight:900;padding:6px 9px;border-radius:999px;background:#f3efff;color:#6b39d4}
+.v14-items{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:4px 16px 14px}.v14-item{min-width:0;border:1px solid #eeeef2;border-radius:13px;padding:9px 6px;text-align:center;background:#fafafd}.v14-icon{height:36px;display:flex;align-items:center;justify-content:center;font-size:25px}.v14-item b{display:block;font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v14-item span{display:block;font-size:9px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.v14-summary{padding:0 16px 12px;font-size:12px;line-height:1.45;color:#555}.v14-summary strong{color:#222}.v14-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}.v14-actions button{margin:0!important;padding:11px 9px;font-size:12px}.v14-actions .v14-primary{background:linear-gradient(135deg,#4f35dc,#8a4df0);color:#fff;border:none}
+@media(max-width:680px){.v14-head h2{font-size:21px}.v14-grid{grid-template-columns:1fr}.v14-items{padding-left:12px;padding-right:12px}.v14-look-top{padding-left:12px;padding-right:12px}.v14-summary{padding-left:12px;padding-right:12px}.v14-actions{padding-left:12px;padding-right:12px}.v14-item{padding:8px 4px}.v14-icon{font-size:23px}}
 </style>
 <script>
 (function(){
   const $=id=>document.getElementById(id);
-  const btn=$("v14_build"), out=$("v14_results");
-  if(!btn) return;
-  btn.addEventListener("click", async ()=>{
-    btn.disabled=true; btn.textContent="Building looks…";
+  const btn=$("v14_build"),out=$("v14_results"),status=$("v14_status");
+  if(!btn||!out)return;
+  const esc=v=>{const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML};
+  const iconFor=(kind,value)=>{
+    const v=String(value||'').toLowerCase();
+    if(kind==='top') return v.includes('blazer')?'🧥':v.includes('shirt')?'👔':v.includes('hoodie')?'🧥':'👕';
+    if(kind==='bottom') return v.includes('short')?'🩳':v.includes('skirt')?'👗':v.includes('trouser')?'👖':v.includes('chino')?'👖':'👖';
+    if(kind==='shoe') return v.includes('boot')?'🥾':v.includes('loafer')?'👞':v.includes('sandal')?'🩴':v.includes('formal')||v.includes('derby')?'👞':'👟';
+    return v.includes('sunglass')?'🕶️':v.includes('bag')?'👜':v.includes('belt')?'🪢':v.includes('watch')?'⌚':'✨';
+  };
+  const item=(label,value,kind)=>`<div class="v14-item"><div class="v14-icon">${iconFor(kind,value)}</div><b>${esc(label)}</b><span>${esc(value||'AI choose')}</span></div>`;
+  function selectLook(x){
     try{
-      const payload={
-        top_color:$("v14_top_color").value,
-        outfit:$("v14_outfit").value,
-        bottom_color:$("v14_bottom_color").value,
-        occasion:$("v14_occasion").value,
-        footwear:$("v14_footwear").value,
-        accessory:$("v14_accessory").value
-      };
-      const r=await fetch("/api/build-looks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-      if(!r.ok) throw new Error("Could not build looks");
-      const data=await window.fitoraReadResponse(r);
-      out.innerHTML=(data.looks||[]).map((x,i)=>`
-        <article class="v14-look">
-          <h3>${x.name}</h3>
-          <p><b>Top:</b> ${x.top_color} · <b>Outfit:</b> ${x.outfit}</p>
-          <p><b>Bottom:</b> ${x.bottom_color} · <b>Footwear:</b> ${x.footwear}</p>
-          <p><b>Accessories:</b> ${x.accessories} · <b>Occasion:</b> ${x.occasion}</p>
-          <p>${x.why}</p>
-          <button class="v14-use" type="button" data-i="${i}">Use this look for Visual Try-On</button>
-        </article>`).join("");
-      out.querySelectorAll(".v14-use").forEach((b,i)=>b.addEventListener("click",()=>{
-        const x=data.looks[i];
-        window.dispatchEvent(new CustomEvent("v14-look-selected",{detail:x}));
-        b.textContent="✓ Look selected — ready for Visual Try-On";
-      }));
-    }catch(e){ out.innerHTML="<p>Could not build looks. Please try again.</p>"; }
-    finally{btn.disabled=false;btn.textContent="✨ Build 3 complete looks";}
+      if(typeof selectedColor!=='undefined') selectedColor=x.top_color||x.main_color||selectedColor;
+      if(typeof selectedOutfit!=='undefined') selectedOutfit=x.outfit||selectedOutfit;
+    }catch(e){}
+    const color=x.top_color||x.main_color||'';
+    const outfit=x.outfit||'';
+    const bottom=x.bottom_color||'';
+    const shoe=x.footwear||'';
+    const accessory=x.accessories||'';
+    const cc=$("customColor"),co=$("customOutfit"),bc=$("bottomColor"),fw=$("footwear"),ac=$("accessories");
+    if(cc)cc.value=color;if(co)co.value=outfit;
+    if(bc){const match=[...bc.options].find(o=>o.value.toLowerCase()===String(bottom).toLowerCase());bc.value=match?match.value:'Custom'}
+    if(fw){const match=[...fw.options].find(o=>o.value.toLowerCase()===String(shoe).toLowerCase());fw.value=match?match.value:'No preference'}
+    if(ac)ac.value=accessory;
+    if(typeof renderColors==='function')renderColors();if(typeof renderOutfits==='function')renderOutfits();if(typeof updateChoiceLabels==='function')updateChoiceLabels();
+    window.fitoraNotify((x.name||'Look')+' selected. Scroll to Visual Try-On to preview it.','info');
+    document.querySelector('.tryon-controls')?.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  function changeOne(x){
+    selectLook(x);
+    const fw=$("footwear"),ac=$("accessories");
+    (fw||ac)?.scrollIntoView({behavior:'smooth',block:'center'});
+    if(fw)fw.focus();
+  }
+  btn.addEventListener('click',async()=>{
+    btn.disabled=true;btn.textContent='Building your looks…';status.textContent='Creating three different complete outfit directions.';out.innerHTML='';
+    try{
+      const payload={top_color:$('v14_top_color').value.trim(),outfit:$('v14_outfit').value.trim(),bottom_color:$('v14_bottom_color').value.trim(),occasion:$('v14_occasion').value,footwear:$('v14_footwear').value.trim(),accessory:$('v14_accessory').value.trim()};
+      const r=await fetch('/api/build-looks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await window.fitoraReadResponse(r);if(!r.ok)throw new Error(window.fitoraFriendlyError(data,'Could not build looks'));
+      const looks=Array.isArray(data.looks)?data.looks.slice(0,3):[];$('v14_count').textContent=looks.length+' looks';
+      if(!looks.length){out.innerHTML='<div class="empty-state">No looks were returned. Please try again.</div>';status.textContent='';return;}
+      out.innerHTML=looks.map((x,i)=>`<article class="v14-look"><div class="v14-look-top"><h3>Look ${i+1} — ${esc(x.name||(['Balanced','Alternate','Fresh take'][i]))}</h3><span class="v14-tag">${esc(x.occasion||payload.occasion)}</span></div><div class="v14-items">${item('Top',x.top_color||x.main_color,'top')}${item('Bottom',x.bottom_color,'bottom')}${item('Shoes',x.footwear,'shoe')}${item('Extras',x.accessories,'accessory')}</div><div class="v14-summary"><strong>Why it works:</strong> ${esc(x.why||'Coordinates the selected pieces for the occasion.')}</div><div class="v14-actions"><button class="secondary-btn v14-primary" type="button" data-i="${i}">✨ Try this look</button><button class="secondary-btn v14-change" type="button" data-i="${i}">↻ Change one item</button></div></article>`).join('');
+      out.querySelectorAll('.v14-primary').forEach(b=>b.addEventListener('click',()=>selectLook(looks[Number(b.dataset.i)])));
+      out.querySelectorAll('.v14-change').forEach(b=>b.addEventListener('click',()=>changeOne(looks[Number(b.dataset.i)])));
+      status.textContent='Pick a look to send it to Visual Try-On, or change one item first.';
+    }catch(e){status.textContent='';window.fitoraNotify(e.message||'Could not build looks. Please try again.','error')}
+    finally{btn.disabled=false;btn.textContent='✨ Build 3 complete looks';}
   });
 })();
 </script>
