@@ -392,6 +392,7 @@ window.fitoraFriendlyError=function(d,fallback){
 <footer>FITORA • Your fit. Your style. Your look.</footer>
 </main>
 <script>
+const safeImageSrc=s=>{const v=String(s||'');return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v)?v:''};
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const form=document.getElementById('form'),btn=document.getElementById('go'),result=document.getElementById('result');
 
@@ -792,7 +793,7 @@ root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dat
  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
  document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
  function renderProfile(){if(!profile){$('accountLabel').textContent='Sign up';$('profileChip').classList.remove('show');return} $('accountLabel').textContent='Profile';$('profileChip').classList.add('show');$('profileChipText').textContent='Hi, '+profile.name;$('profileDot').textContent=(profile.name||'Y').trim().charAt(0).toUpperCase();$('profileName').value=profile.name||'';$('profileEmail').value=profile.email||'';$('profileGender').value=profile.gender||'unisex';}
- function renderSaved(){ $('savedCount').textContent=saved.length; const g=$('savedGrid'); if(!saved.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1">No saved looks yet.<br>Generate a look and tap <b>♡ Save look</b>.</div>';return;} g.innerHTML=saved.map((x,i)=>`<div class="saved-card">${x.image?`<img src="${x.image}" alt="Saved look">`:''}<div class="saved-card-body"><b>${escapeHtml(x.color||'Look')} • ${escapeHtml(x.outfit||'Style')}</b><small>${escapeHtml(x.bottom||'')} ${x.shoes?'• '+escapeHtml(x.shoes):''}</small><button type="button" class="secondary-btn remove-saved" data-i="${i}">Remove</button></div></div>`).join(''); g.querySelectorAll('.remove-saved').forEach(b=>b.addEventListener('click',()=>{saved.splice(Number(b.dataset.i),1);safeSet(KEY.saved,saved);renderSaved();toast('Look removed');}));}
+ function renderSaved(){ $('savedCount').textContent=saved.length; const g=$('savedGrid'); if(!saved.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1">No saved looks yet.<br>Generate a look and tap <b>♡ Save look</b>.</div>';return;} g.innerHTML=saved.map((x,i)=>`<div class="saved-card">${x.image?`<img src="${escapeHtml(safeImageSrc(x.image))}" alt="Saved look">`:''}<div class="saved-card-body"><b>${escapeHtml(x.color||'Look')} • ${escapeHtml(x.outfit||'Style')}</b><small>${escapeHtml(x.bottom||'')} ${x.shoes?'• '+escapeHtml(x.shoes):''}</small><button type="button" class="secondary-btn remove-saved" data-i="${i}">Remove</button></div></div>`).join(''); g.querySelectorAll('.remove-saved').forEach(b=>b.addEventListener('click',()=>{saved.splice(Number(b.dataset.i),1);safeSet(KEY.saved,saved);renderSaved();toast('Look removed');}));}
  function applyTheme(){
  const theme=settings.theme==='auto'?(profile?.gender==='male'?'blue':profile?.gender==='female'?'pink':'neutral'):settings.theme;
  document.body.classList.remove('v24-blue','v24-pink','v24-neutral');
