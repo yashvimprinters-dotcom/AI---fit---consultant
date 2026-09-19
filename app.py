@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from openai import (
@@ -97,6 +97,23 @@ async def security_middleware(request: Request, call_next):
     if request.url.scheme == "https":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
+
+@app.get("/manifest.json")
+async def pwa_manifest():
+    return JSONResponse(content={
+        "id": "/", "name": "FITORA – Your fit. Your style. Your look.", "short_name": "FITORA",
+        "description": "AI fashion consultant for fit, size, outfits and visual try-on.",
+        "start_url": "/", "scope": "/", "display": "standalone",
+        "background_color": "#10051f", "theme_color": "#10051f",
+        "icons": [
+            {"src": "/static/icons/fitora-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+            {"src": "/static/icons/fitora-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+        ],
+    })
+
+@app.get("/sw.js")
+async def pwa_service_worker():
+    return Response(content=Path("static/sw.js").read_text(encoding="utf-8"), media_type="application/javascript", headers={"Cache-Control": "no-cache"})
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
