@@ -21,6 +21,10 @@ label{display:block;font-size:13px;font-weight:800;margin:15px 0 7px}input,selec
 
 /* v19 customer account & utility layer */
 .utility-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 12px}.utility-btn{margin:0!important;background:#fff;color:#171717;border:1px solid #e2e3e8;min-height:48px;padding:10px 8px;font-size:12px;box-shadow:0 5px 18px rgba(20,20,35,.05)}.utility-btn.active{background:#111;color:#fff;border-color:#111}.utility-count{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:999px;align-items:center;justify-content:center;background:#eee;color:#111;font-size:10px;margin-left:3px}.utility-btn.active .utility-count{background:#fff;color:#111}.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(12,10,18,.55);z-index:50;padding:18px;align-items:flex-end;justify-content:center}.modal-backdrop.open{display:flex}.modal{width:min(560px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 25px 70px rgba(0,0,0,.28);animation:slideUp .18s ease}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.modal-head h3{margin:0;font-size:21px}.modal-close{width:40px!important;height:40px!important;padding:0!important;margin:0!important;border-radius:12px!important;background:#f2f2f5!important;color:#111!important}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.saved-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.saved-card{border:1px solid #e2e3e8;border-radius:16px;overflow:hidden;background:#fff}.saved-card img{width:100%;aspect-ratio:4/5;object-fit:cover;background:#f2f2f4}.saved-card-body{padding:10px}.saved-card-body b{display:block;font-size:13px}.saved-card-body small{display:block;color:#70737b;line-height:1.4;margin-top:4px}.saved-card-body button{margin-top:8px;padding:10px;font-size:12px}.empty-state{padding:22px;text-align:center;border:1px dashed #d6d7dc;border-radius:16px;color:#737680;background:#fafafd}.setting-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #ececf0}.setting-row:last-child{border-bottom:0}.setting-row b{font-size:14px}.setting-row small{display:block;color:#777;margin-top:3px;line-height:1.35}.switch{width:48px!important;height:28px!important;padding:0!important;appearance:none;border-radius:999px!important;background:#ddd!important;position:relative;flex:none;cursor:pointer}.switch:checked{background:#111!important}.switch:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.2)}.switch:checked:after{transform:translateX(20px)}.profile-chip{display:none;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:#f0edf7;color:#4c1d95;font-size:12px;font-weight:800;margin:0 0 10px}.profile-chip.show{display:flex}.profile-dot{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#7c3aed;color:#fff;font-size:11px}.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:#111;color:#fff;padding:12px 16px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;z-index:70;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}@keyframes slideUp{from{transform:translateY(15px);opacity:.6}to{transform:translateY(0);opacity:1}}@media(max-width:560px){.utility-bar{grid-template-columns:repeat(4,1fr)}.utility-btn{font-size:11px;min-height:52px}.saved-grid{grid-template-columns:1fr 1fr}.modal-backdrop{padding:10px}.modal{border-radius:22px;padding:17px}}
+
+/* v20: simpler customer-first home */
+.customer-menu-row{margin:10px 0 12px}.more-menu-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0;padding:13px 16px;border-radius:16px;background:#fff;color:#171717;border:1px solid #e2e3e8;box-shadow:0 7px 22px rgba(20,20,35,.06);font-size:14px;font-weight:850}.more-menu-btn span:nth-child(2){flex:1;text-align:left}.more-chevron{font-size:20px;color:#7c3aed}.quick-start{display:grid;gap:10px;margin:12px 0 16px}.quick-card{display:flex;align-items:center;gap:12px;text-align:left;margin:0!important;padding:14px 15px!important;background:#fff!important;color:#171717!important;border:1px solid #e4e5ea!important;border-radius:18px!important;box-shadow:0 8px 25px rgba(20,20,35,.055)!important}.quick-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#f1ebff;font-size:20px;flex:none}.quick-card span:nth-child(2){flex:1}.quick-card b{display:block;font-size:14px}.quick-card small{display:block;color:#737680;font-size:11px;margin-top:3px;font-weight:500}.quick-arrow{font-size:25px;color:#8a52dc}.customer-menu{display:none;position:fixed;inset:0;z-index:80}.customer-menu.open{display:block}.customer-menu-backdrop{position:absolute;inset:0;background:rgba(10,8,15,.5)}.customer-menu-panel{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border-radius:24px;padding:16px;box-shadow:0 25px 80px rgba(0,0,0,.3);animation:slideUp .18s ease}.customer-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.customer-menu-head b{font-size:18px}.customer-menu-head small{display:block;color:#777;margin-top:3px}.menu-close{width:38px!important;height:38px!important;padding:0!important;margin:0!important;background:#f2f2f5!important;color:#111!important}.customer-menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.customer-menu-grid .utility-btn{min-height:58px;font-size:12px;margin:0!important}.customer-menu-grid .utility-btn:hover{transform:none}.customer-menu-grid .utility-btn:active{transform:scale(.98)}
+@media(min-width:700px){.quick-start{grid-template-columns:repeat(3,1fr)}.quick-card{min-height:110px}.customer-menu-panel{left:50%;right:auto;width:520px;transform:translateX(-50%)}}
 </style>
 </head>
 <body>
@@ -36,16 +40,25 @@ label{display:block;font-size:13px;font-weight:800;margin:15px 0 7px}input,selec
   <button type="button" class="nav-tab" data-target="styleSection">🎨 <span>Colour & Visual Try-On</span></button>
 </nav>
 <div class="profile-chip" id="profileChip"><span class="profile-dot" id="profileDot">Y</span><span id="profileChipText">Welcome</span></div>
-<div class="utility-bar" aria-label="Customer tools">
-  <button type="button" class="utility-btn" id="accountBtn">👤 <span id="accountLabel">Sign up</span></button>
-  <button type="button" class="utility-btn" id="savedBtn">♡ Saved <span class="utility-count" id="savedCount">0</span></button>
-  <button type="button" class="utility-btn" id="feedbackBtn">💬 Feedback</button>
-  <button type="button" class="utility-btn" id="settingsBtn">⚙️ Settings</button>
+<div class="customer-menu-row">
+  <button type="button" class="more-menu-btn" id="moreMenuBtn">☰ <span>My account & more</span><span class="more-chevron">⌄</span></button>
 </div>
-<div class="feature-strip" aria-label="What you can do">
-  <div class="feature-mini"><b>📏 Find your size</b><span>Use measurements + seller chart.</span></div>
-  <div class="feature-mini"><b>🧩 Build a look</b><span>Mix outfit, footwear & accessories.</span></div>
-  <div class="feature-mini"><b>📸 Try it on</b><span>Preview the selected look on your photo.</span></div>
+<div class="quick-start" aria-label="Start here">
+  <button type="button" class="quick-card" data-scroll="fitSection"><span class="quick-icon">📏</span><span><b>Find my size</b><small>Get a size from the seller chart</small></span><span class="quick-arrow">›</span></button>
+  <button type="button" class="quick-card" data-scroll="styleSection"><span class="quick-icon">✨</span><span><b>Build my look</b><small>Choose colours, clothes & extras</small></span><span class="quick-arrow">›</span></button>
+  <button type="button" class="quick-card" data-scroll="v17ExactTryOn"><span class="quick-icon">📸</span><span><b>Try it on</b><small>See your selected look on your photo</small></span><span class="quick-arrow">›</span></button>
+</div>
+<div class="customer-menu" id="customerMenu" aria-hidden="true">
+  <div class="customer-menu-backdrop" data-close-menu></div>
+  <div class="customer-menu-panel">
+    <div class="customer-menu-head"><div><b>My account</b><small>Everything you need, in one place</small></div><button type="button" class="menu-close" data-close-menu>×</button></div>
+    <div class="customer-menu-grid">
+      <button type="button" class="utility-btn" id="accountBtn">👤 <span id="accountLabel">Sign up</span></button>
+      <button type="button" class="utility-btn" id="savedBtn">♡ Saved <span class="utility-count" id="savedCount">0</span></button>
+      <button type="button" class="utility-btn" id="feedbackBtn">💬 Feedback</button>
+      <button type="button" class="utility-btn" id="settingsBtn">⚙️ Settings</button>
+    </div>
+  </div>
 </div>
 <form id="form">
 
@@ -610,6 +623,19 @@ body.v19-dark{background:#111217;color:#f4f4f5}body.v19-dark .card,body.v19-dark
 
 <script>
 document.getElementById('v17_save_look')?.addEventListener('click',()=>{document.getElementById('saveLookBtn')?.click()});
+</script>
+
+<script>
+// v20: keep account tools out of the main journey, while making them one tap away.
+(function(){
+ const menu=document.getElementById('customerMenu');
+ const open=()=>{menu?.classList.add('open');menu?.setAttribute('aria-hidden','false')};
+ const close=()=>{menu?.classList.remove('open');menu?.setAttribute('aria-hidden','true')};
+ document.getElementById('moreMenuBtn')?.addEventListener('click',open);
+ menu?.querySelectorAll('[data-close-menu]').forEach(x=>x.addEventListener('click',close));
+ document.querySelectorAll('[data-scroll]').forEach(b=>b.addEventListener('click',()=>{const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}));
+ document.querySelectorAll('.customer-menu-grid .utility-btn').forEach(b=>b.addEventListener('click',()=>{if(b.id!=='accountBtn'&&b.id!=='savedBtn'&&b.id!=='feedbackBtn'&&b.id!=='settingsBtn')return;setTimeout(close,80);}));
+})();
 </script>
 </body>
 </html>
