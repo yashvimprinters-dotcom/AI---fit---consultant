@@ -361,6 +361,24 @@ XL — chest 42 in, length 30 in"></textarea>
 <div class="modal-backdrop" id="feedbackModal"><div class="modal"><div class="modal-head"><h3>💬 Tell us what you think</h3><button class="modal-close" type="button" data-close="feedbackModal">×</button></div><p class="muted">A quick message helps improve the customer experience.</p><label>How was your experience?</label><select id="feedbackRating"><option>Very good</option><option>Good</option><option>Okay</option><option>Needs improvement</option></select><label>Your feedback</label><textarea id="feedbackText" placeholder="What was easy, confusing, missing or useful?"></textarea><button type="button" id="sendFeedback">Send feedback</button></div></div>
 <div class="modal-backdrop" id="settingsModal"><div class="modal"><div class="modal-head"><h3>⚙️ App settings</h3><button class="modal-close" type="button" data-close="settingsModal">×</button></div><div class="setting-row"><div><b>Dark mode</b><small>Use a darker interface.</small></div><input class="switch" id="darkModeToggle" type="checkbox"></div><label>Appearance</label><select id="themeSelect"><option value="auto">✨ Automatic</option><option value="pink">💜 FITORA Purple / Pink</option><option value="blue">💙 Ocean Blue</option><option value="neutral">🤍 Neutral</option></select><div class="setting-row"><div><b>Remember last tab</b><small>Open the app where you left off.</small></div><input class="switch" id="rememberTabToggle" type="checkbox" checked></div><div class="setting-row"><div><b>Show helpful tips</b><small>Keep short guidance messages visible.</small></div><input class="switch" id="tipsToggle" type="checkbox" checked></div><button type="button" class="secondary-btn" data-close="settingsModal">Done</button></div></div>
 <div class="toast" id="toast"></div>
+<script>
+// v26: customer-friendly errors; never show raw provider/API diagnostics.
+window.fitoraNotify=function(message, kind){
+  const t=document.getElementById('toast'); if(!t)return;
+  t.textContent=message; t.classList.add('show'); t.dataset.kind=kind||'info';
+  clearTimeout(window.__fitoraToast); window.__fitoraToast=setTimeout(()=>t.classList.remove('show'),4200);
+};
+window.fitoraReadResponse=async function(r){
+  const text=await r.text();
+  try{return JSON.parse(text)}catch(e){return {error:r.ok?'Unexpected server response.':'FITORA could not complete that request. Please try again.',code:'invalid_response'}}
+};
+window.fitoraFriendlyError=function(d,fallback){
+  if(d?.code==='ai_rate_limited') return 'FITORA is busy right now. Your other FITORA tools can still work without live AI. Try the AI preview again later.';
+  if(d?.code==='ai_quota') return 'Live AI is temporarily unavailable because the AI service has reached an account limit. FITORA will use built-in suggestions where possible.';
+  if(d?.code==='ai_connection') return 'FITORA could not reach the AI service. Please try again in a moment.';
+  return d?.error||fallback||'Something went wrong. Please try again.';
+};
+</script>
 <nav class="bottom-nav" aria-label="Main navigation">
   <button type="button" class="active" id="bottomHome"><span class="bn-icon">⌂</span>Home</button>
   <button type="button" id="bottomSaved"><span class="bn-icon">♡</span>Saved</button>
@@ -407,24 +425,24 @@ document.getElementById('customOutfit').addEventListener('input',e=>{if(e.target
 
 form.addEventListener('submit',async e=>{
  e.preventDefault();btn.disabled=true;btn.textContent='Analyzing fit…';result.style.display='none';
- try{const fd=new FormData(form);const r=await fetch('/api/recommend',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Something went wrong')+(d.details?'\n\n'+d.details:''));
- lastRecommendation=d;document.getElementById('size').textContent=d.recommended_size;document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%';
+ try{const fd=new FormData(form);const r=await fetch('/api/recommend',{method:'POST',body:fd});const d=await window.fitoraReadResponse(r);if(!r.ok)throw new Error(window.fitoraFriendlyError(d,'Something went wrong'));
+ lastRecommendation=d;document.getElementById('size').textContent=d.recommended_size;document.getElementById('confidence').textContent='Confidence: '+d.confidence+'%'+(d.source==='local_fallback'?' • Built-in fallback':'');
  document.getElementById('sizeChartRows').innerHTML=(d.size_chart_rows||[]).map(row=>`<tr><td><strong>${escapeHtml(row.size)}</strong></td><td>${escapeHtml(row.measurements)}</td></tr>`).join('');
  document.getElementById('summary').textContent=d.fit_summary;document.getElementById('reasoning').textContent=d.reasoning;document.getElementById('notes').textContent=d.size_notes;document.getElementById('next').textContent=d.next_measurement;document.getElementById('caveats').textContent=d.caveats;
  document.getElementById('palette').innerHTML=(d.color_palette||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');document.getElementById('combinations').innerHTML=(d.color_combinations||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');document.getElementById('styleTips').innerHTML=(d.style_tips||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
- result.style.display='block';result.scrollIntoView({behavior:'smooth'});
- }catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Find My Size';}
+ result.style.display='block'; if(d.ai_unavailable) window.fitoraNotify('Live AI is temporarily unavailable. FITORA used a built-in sizing/style fallback so you can continue.','info'); result.scrollIntoView({behavior:'smooth'});
+ }catch(err){window.fitoraNotify(err.message,'error')}finally{btn.disabled=false;btn.textContent='Find My Size';}
 });
 
 document.getElementById('goToResults').addEventListener('click',()=>{if(result.style.display==='block')result.scrollIntoView({behavior:'smooth'});else document.getElementById('go').scrollIntoView({behavior:'smooth'});});
 const tryOnBtn=document.getElementById('tryOnBtn'),tryOnStatus=document.getElementById('tryOnStatus'),tryOnImage=document.getElementById('tryOnImage');
 tryOnBtn.addEventListener('click',async()=>{
- const photoInput=form.querySelector('input[name="photo"]');if(!photoInput.files.length){alert('Please upload your full-body photo in Clothes Fitting first.');document.getElementById('form').scrollIntoView({behavior:'smooth'});return;}
+ const photoInput=form.querySelector('input[name="photo"]');if(!photoInput.files.length){window.fitoraNotify('Please upload your full-body photo in Clothes Fitting first.','error');document.getElementById('form').scrollIntoView({behavior:'smooth'});return;}
  tryOnBtn.disabled=true;tryOnBtn.textContent='Creating visual preview…';tryOnStatus.textContent='The AI is editing the clothing while trying to preserve your face, pose, proportions and background. This can take a little while.';tryOnImage.style.display='none';
  try{const fd=new FormData();fd.append('photo',photoInput.files[0]);fd.append('selected_color',selectedColor);fd.append('selected_outfit',selectedOutfit);fd.append('category',form.querySelector('[name="category"]').value);fd.append('fit_preference',form.querySelector('[name="fit_preference"]').value);
  fd.append('bottom_color',document.getElementById('bottomColor').value);fd.append('footwear',document.getElementById('footwear').value);fd.append('accessories',document.getElementById('accessories').value);
- const r=await fetch('/api/try-on',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Try-on failed')+(d.details?'\n\n'+d.details:''));tryOnImage.src=d.image_data_url;tryOnImage.style.display='block';document.getElementById('previewActions').style.display='grid';tryOnStatus.textContent=d.note||('Preview: '+d.selected_color+' • '+d.selected_outfit);tryOnImage.scrollIntoView({behavior:'smooth',block:'center'});
- }catch(err){tryOnStatus.textContent='';alert(err.message)}finally{tryOnBtn.disabled=false;tryOnBtn.textContent='✨ Show me in this colour & outfit';}
+ const r=await fetch('/api/try-on',{method:'POST',body:fd});const d=await window.fitoraReadResponse(r);if(!r.ok)throw new Error(window.fitoraFriendlyError(d,'Try-on failed'));tryOnImage.src=d.image_data_url;tryOnImage.style.display='block';document.getElementById('previewActions').style.display='grid';tryOnStatus.textContent=d.note||('Preview: '+d.selected_color+' • '+d.selected_outfit);tryOnImage.scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(err){tryOnStatus.textContent='';window.fitoraNotify(err.message,'error')}finally{tryOnBtn.disabled=false;tryOnBtn.textContent='✨ Show me in this colour & outfit';}
 });
 
 
@@ -438,7 +456,7 @@ document.querySelectorAll('.nav-tab').forEach(tab=>tab.addEventListener('click',
 
 // Apply the first AI-generated suggestion to the visual try-on builder.
 document.getElementById('useAiSuggestion').addEventListener('click',()=>{
- if(!lastRecommendation){alert('Run Clothes Fitting first so the AI can generate your colour and outfit suggestions.');document.getElementById('fitSection').scrollIntoView({behavior:'smooth'});return;}
+ if(!lastRecommendation){window.fitoraNotify('Run Clothes Fitting first so FITORA can generate your colour and outfit suggestions.','error');document.getElementById('fitSection').scrollIntoView({behavior:'smooth'});return;}
  const palette=lastRecommendation.color_palette||[];
  if(palette.length){selectedColor=palette[0];document.getElementById('customColor').value=palette[0];renderColors();}
  const categoryName=form.querySelector('[name="category"]').value;
@@ -460,11 +478,11 @@ document.getElementById('buildLooksBtn').addEventListener('click',async()=>{
   fd.append('complexion_undertone',form.querySelector('[name="complexion_undertone"]').value);
   fd.append('selected_color',selectedColor);fd.append('selected_outfit',selectedOutfit);
   fd.append('custom_color',document.getElementById('customColor').value);fd.append('custom_outfit',document.getElementById('customOutfit').value);
-  const r=await fetch('/api/build-look',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Could not build looks')+(d.details?'\n\n'+d.details:''));
+  const r=await fetch('/api/build-look',{method:'POST',body:fd});const d=await window.fitoraReadResponse(r);if(!r.ok)throw new Error(window.fitoraFriendlyError(d,'Could not build looks'));
   cards.innerHTML=(d.looks||[]).map((look,i)=>`<div class="look-card"><h3>${escapeHtml(look.name||('Look '+(i+1)))}</h3><div class="look-meta"><b>Colour:</b> ${escapeHtml(look.main_color)}</div><div class="look-meta"><b>Outfit:</b> ${escapeHtml(look.outfit)}</div><div class="look-meta"><b>Bottom:</b> ${escapeHtml(look.bottom_color)}</div><div class="look-meta"><b>Shoes:</b> ${escapeHtml(look.footwear)}</div><div class="look-meta"><b>Accessories:</b> ${escapeHtml(look.accessories)}</div><p>${escapeHtml(look.why)}</p><button type="button" class="secondary-btn apply-look" data-look='${escapeHtml(JSON.stringify(look))}'>Use this look</button></div>`).join('');
-  status.textContent='Choose a look below. Using it will set the try-on controls without generating an image yet.';
+  status.textContent='Choose a look below. Using it will set the try-on controls without generating an image yet.'+(d.ai_unavailable?' Built-in styling fallback is being used while live AI is unavailable.':'');
   cards.querySelectorAll('.apply-look').forEach(b=>b.addEventListener('click',()=>{const look=JSON.parse(b.dataset.look);selectedColor=look.main_color;selectedOutfit=look.outfit;document.getElementById('customColor').value=look.main_color;document.getElementById('customOutfit').value=look.outfit;document.getElementById('bottomColor').value=[...document.getElementById('bottomColor').options].some(o=>o.value===look.bottom_color)?look.bottom_color:'Custom';document.getElementById('footwear').value=[...document.getElementById('footwear').options].some(o=>o.value===look.footwear)?look.footwear:'No preference';document.getElementById('accessories').value=look.accessories||'';renderColors();renderOutfits();updateChoiceLabels();status.textContent='Selected: '+look.name+'. Scroll to Visual Try-On to preview it.';document.querySelector('.tryon-controls').scrollIntoView({behavior:'smooth',block:'center'});}));
- }catch(err){status.textContent='';alert(err.message)}finally{lookBtn.disabled=false;lookBtn.textContent='✨ Build 3 complete looks';}
+ }catch(err){status.textContent='';window.fitoraNotify(err.message,'error')}finally{lookBtn.disabled=false;lookBtn.textContent='✨ Build 3 complete looks';}
 });
 
 // Save/share the generated preview without another AI call.
@@ -474,7 +492,7 @@ document.getElementById('downloadTryOn').addEventListener('click',()=>{
 document.getElementById('shareTryOn').addEventListener('click',async()=>{
  if(!tryOnImage.src)return;
  if(navigator.share){try{await navigator.share({title:'My AI Fit Consultant look',text:`${selectedColor} • ${selectedOutfit}`});}catch(e){}}
- else{await navigator.clipboard?.writeText(`${selectedColor} • ${selectedOutfit}`);alert('Look details copied.');}
+ else{await navigator.clipboard?.writeText(`${selectedColor} • ${selectedOutfit}`);window.fitoraNotify('Look details copied.','info');}
 });
 </script>
 
@@ -500,7 +518,7 @@ document.getElementById('shareTryOn').addEventListener('click',async()=>{
 <script>
 (async function(){
   try {
-    const r=await fetch('/fashion-knowledge.json'); const d=await r.json();
+    const r=await fetch('/fashion-knowledge.json'); const d=await window.fitoraReadResponse(r);
     const f=document.getElementById('v13_footwear'), a=document.getElementById('v13_accessory');
     (d.footwear||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;f.appendChild(o)});
     (d.accessories||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;a.appendChild(o)});
@@ -551,7 +569,7 @@ document.getElementById('shareTryOn').addEventListener('click',async()=>{
       };
       const r=await fetch("/api/build-looks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       if(!r.ok) throw new Error("Could not build looks");
-      const data=await r.json();
+      const data=await window.fitoraReadResponse(r);
       out.innerHTML=(data.looks||[]).map((x,i)=>`
         <article class="v14-look">
           <h3>${x.name}</h3>
@@ -729,8 +747,10 @@ root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dat
    return fd;
  }
  async function generate(changed){
-   const btn=$('v17_try');btn.disabled=true;btn.textContent='Creating exact-product preview…';$('v17_status').textContent='AI is combining the customer photo with the selected product references.';$('v17_image').style.display='none';
-   try{const fd=makeForm(changed);const r=await fetch('/api/try-on-exact',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error((d.error||'Try-on failed')+(d.details?'\n\n'+d.details:''));$('v17_image').src=d.image_data_url;$('v17_image').style.display='block';$('v17_status').textContent=(d.note||'Preview created.')+' Reference product images used: '+d.reference_count+'.';$('v17_image').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){$('v17_status').textContent='';alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Generate Complete Look on Me';}
+   const actionButtons=[$('v17_try'),$('v17_change_top'),$('v17_change_bottom'),$('v17_change_outer'),$('v17_change_shoe'),$('v17_change_acc')];
+   actionButtons.forEach(b=>b.disabled=true);
+   const btn=$('v17_try');btn.textContent='Creating exact-product preview…';$('v17_status').textContent='FITORA is combining your photo with the selected product references.';$('v17_image').style.display='none';
+   try{const fd=makeForm(changed);const r=await fetch('/api/try-on-exact',{method:'POST',body:fd});const d=await window.fitoraReadResponse(r);if(!r.ok)throw new Error(window.fitoraFriendlyError(d,'Try-on failed'));$('v17_image').src=d.image_data_url;$('v17_image').style.display='block';$('v17_status').textContent=(d.note||'Preview created.')+' Reference product images used: '+d.reference_count+'.';$('v17_image').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){$('v17_status').textContent=e.message;window.fitoraNotify(e.message,'error')}finally{actionButtons.forEach(b=>b.disabled=false);btn.textContent='✨ Generate Complete Look on Me';}
  }
  $('v17_try').addEventListener('click',()=>generate('all'));
  [['v17_change_top','top'],['v17_change_bottom','bottom'],['v17_change_outer','outerwear'],['v17_change_shoe','footwear'],['v17_change_acc','accessory']].forEach(([id,itemName])=>$(id).addEventListener('click',()=>generate(itemName)));
@@ -774,7 +794,7 @@ root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dat
  $('sendFeedback').addEventListener('click',()=>{const text=$('feedbackText').value.trim(),rating=$('feedbackRating').value;if(!text){toast('Please add a short message');return} const feedback=safeGet('afc_feedback_v1',[]);feedback.push({rating,text,at:new Date().toISOString()});safeSet('afc_feedback_v1',feedback);$('feedbackText').value='';closeModal('feedbackModal');toast('Thanks — feedback saved');});
  $('clearSaved').addEventListener('click',()=>{if(!saved.length){toast('Nothing to clear');return}if(confirm('Clear all saved looks on this device?')){saved=[];safeSet(KEY.saved,saved);renderSaved();toast('Saved looks cleared')}});
  ['darkModeToggle','rememberTabToggle','tipsToggle','themeSelect'].forEach(id=>$(id).addEventListener('change',()=>{settings={dark:$('darkModeToggle').checked,rememberTab:$('rememberTabToggle').checked,tips:$('tipsToggle').checked,theme:$('themeSelect').value};safeSet(KEY.settings,settings);applySettings();toast('Settings saved')}));
- function saveCurrentLook(){const img=$('v17_image'); const legacy=$('tryOnImage'); const src=(img&&img.style.display!=='none'&&img.src)||((legacy&&legacy.style.display!=='none'&&legacy.src)||''); if(!src){toast('Generate a preview first');return} const item={image:src,color:window.selectedColor||document.getElementById('chosenColorLabel')?.textContent||'Look',outfit:window.selectedOutfit||document.getElementById('chosenOutfitLabel')?.textContent||'Style',bottom:document.getElementById('bottomColor')?.value||'',shoes:document.getElementById('footwear')?.value||'',savedAt:new Date().toISOString()}; if(saved.some(x=>x.color===item.color&&x.outfit===item.outfit)){toast('This look is already saved');return} saved.unshift(item);saved=saved.slice(0,12); if(!safeSet(KEY.saved,saved)){toast('Storage is full — try removing older looks');return} renderSaved();toast('Look saved ❤️');}
+ function saveCurrentLook(){const img=$('v17_image'); const legacy=$('tryOnImage'); const src=(img&&img.style.display!=='none'&&img.src)||((legacy&&legacy.style.display!=='none'&&legacy.src)||''); if(!src){toast('Generate a preview first');return} const safeImage=src&&src.length<2200000?src:''; const item={image:safeImage,color:window.selectedColor||document.getElementById('chosenColorLabel')?.textContent||'Look',outfit:window.selectedOutfit||document.getElementById('chosenOutfitLabel')?.textContent||'Style',bottom:document.getElementById('bottomColor')?.value||'',shoes:document.getElementById('footwear')?.value||'',savedAt:new Date().toISOString()}; if(saved.some(x=>x.color===item.color&&x.outfit===item.outfit)){toast('This look is already saved');return} saved.unshift(item);saved=saved.slice(0,8); if(!safeSet(KEY.saved,saved)){toast('Storage is full — try removing older looks');return} renderSaved();toast('Look saved ❤️');}
  $('saveLookBtn')?.addEventListener('click',saveCurrentLook);
  const navTabs=[...document.querySelectorAll('.nav-tab')]; const savedTab=localStorage.getItem('afc_last_tab_v1'); if(settings.rememberTab&&savedTab){const t=navTabs.find(x=>x.dataset.target===savedTab); if(t)t.click();}
  navTabs.forEach(t=>t.addEventListener('click',()=>{if(settings.rememberTab)localStorage.setItem('afc_last_tab_v1',t.dataset.target)}));
