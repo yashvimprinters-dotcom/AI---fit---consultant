@@ -2,6 +2,10 @@ import os
 import json
 import base64
 import tempfile
+import re
+import time
+import hashlib
+from collections import OrderedDict
 from pathlib import Path
 from typing import Optional
 
@@ -17,32 +21,11 @@ from openai import (
     RateLimitError,
 )
 
-app = FastAPI(title="AI Fit Consultant v12")
+app = FastAPI(title="FITORA v27")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-SYSTEM = """You are an AI clothing fit and style consultant.
-Your job is to recommend the most appropriate SIZE FROM THE SELLER'S PROVIDED SIZE CHART and provide practical color/style suggestions.
-
-Fit evidence rules:
-- Treat explicit shopper measurements as the strongest body evidence.
-- Height and weight are useful context but are NOT a substitute for chest, waist, inseam, shoulder, etc.
-- The shopper photo is visual context only. Do NOT claim exact body measurements from a photo.
-- Never infer or mention race, ethnicity, religion, or other sensitive traits.
-- Treat a seller chart as authoritative for that seller, but do not assume whether numbers are body measurements or garment measurements unless the user says so or the chart clearly labels it.
-- If a seller chart is a screenshot, carefully read the visible size labels and measurements. If text and screenshot disagree, say so and lower confidence.
-- Consider the user's preferred fit and clothing category.
-- Do not invent missing measurements or sizes.
-- Confidence must reflect evidence quality, not certainty of the language. If critical measurements are missing or chart meaning is unclear, keep confidence modest.
-- Never guarantee fit. Recommend checking the seller's return/exchange policy when uncertainty is material.
-
-Color and style rules:
-- Give color suggestions as styling guidance, not as objective judgments about attractiveness.
-- If the user provides a self-selected complexion undertone (warm, cool, neutral), use it to suggest harmonious colors. If it is unknown, give a flexible palette and explain that color preference and lighting matter.
-- You may use visible color harmony cues in the shopper photo for clothing coordination, but do not classify the person by race or ethnicity.
-- Suggest 3-5 wearable colors, 2-4 outfit color combinations, and 2-4 practical styling tips relevant to the selected clothing category and preferred fit.
-- Avoid claiming that any color is universally best.
-
-Return only JSON matching the requested schema."""
+SYSTEM = """You are FITORA, a practical clothing fit and style consultant.
+Use the seller chart + explicit shopper measurements to recommend exactly one available size. Photo is visual context only and never a source of exact measurements. Do not infer sensitive traits. Do not guarantee fit. If chart meaning is unclear, say so and lower confidence. Use undertone only when user supplied it. Return only the requested JSON."""
 
 SCHEMA = {
     "type": "object",
@@ -149,8 +132,170 @@ def home():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "product": "AI Fit Consultant v12"}
+    return {"status": "ok", "product": "FITORA v27", "ai_model": _model_name(), "ai_configured": bool(os.getenv("OPENAI_API_KEY")), "photo_in_recommendation": os.getenv("FIT_INCLUDE_PHOTO_IN_RECOMMEND", "false").lower() == "true"}
 
+
+
+# v26 reliability layer: local fallbacks + safe, customer-friendly AI errors.
+
+def _model_name():
+    return os.getenv("FIT_MODEL", "gpt-5.6-luna").strip() or "gpt-5.6-luna"
+
+# Small per-instance cache: avoids paying tokens for duplicate taps/reloads.
+_AI_CACHE = OrderedDict()
+_AI_CACHE_MAX = 128
+
+def _cache_key(prefix, payload):
+    raw = json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return prefix + ":" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+def _cache_get(key):
+    value = _AI_CACHE.get(key)
+    if value is not None:
+        _AI_CACHE.move_to_end(key)
+    return value
+
+def _cache_put(key, value):
+    _AI_CACHE[key] = value
+    _AI_CACHE.move_to_end(key)
+    while len(_AI_CACHE) > _AI_CACHE_MAX:
+        _AI_CACHE.popitem(last=False)
+    return value
+
+
+def _safe_ai_client(key, timeout=60.0):
+    # Do not add application-level retries on top of SDK/provider retry behavior.
+    # Repeated failed requests can themselves contribute to rate-limit pressure.
+    return OpenAI(api_key=key, timeout=timeout, max_retries=0)
+
+
+def _error_code(exc):
+    return str(getattr(exc, "code", "") or "").lower()
+
+
+def _retry_after(exc):
+    try:
+        headers = getattr(getattr(exc, "response", None), "headers", None)
+        value = headers.get("retry-after") if headers else None
+        if value is not None:
+            return max(0, int(float(value)))
+    except Exception:
+        pass
+    return None
+
+
+def _ai_error(exc, feature):
+    code = _error_code(exc)
+    retry_after = _retry_after(exc)
+    if isinstance(exc, RateLimitError):
+        if "credit_balance" in code or "quota" in code or "usage_limit" in code or "spend_limit" in code:
+            message = "AI styling is temporarily unavailable because the AI service has reached its account limit."
+            kind = "ai_quota"
+        else:
+            message = "FITORA is busy right now. You can continue with the built-in fashion suggestions, or try the AI feature again later."
+            kind = "ai_rate_limited"
+        payload = {"error": message, "code": kind, "feature": feature}
+        if retry_after is not None:
+            payload["retry_after_seconds"] = retry_after
+        return JSONResponse(payload, status_code=429)
+    if isinstance(exc, AuthenticationError):
+        return JSONResponse({"error": "FITORA's AI connection needs attention. Please try again later.", "code": "ai_auth"}, status_code=502)
+    if isinstance(exc, APIConnectionError):
+        return JSONResponse({"error": "FITORA could not reach the AI service. Please check your connection and try again.", "code": "ai_connection"}, status_code=503)
+    if isinstance(exc, BadRequestError):
+        return JSONResponse({"error": "FITORA could not process that request. Please check the uploaded images and details.", "code": "ai_bad_request"}, status_code=400)
+    if isinstance(exc, APIError):
+        return JSONResponse({"error": "The AI service could not complete this request. Please try again.", "code": "ai_error"}, status_code=502)
+    return JSONResponse({"error": "FITORA could not complete this request. Please try again.", "code": "ai_error"}, status_code=500)
+
+
+def _parse_size_chart(text):
+    """Parse common text charts for a useful offline fallback. Never invent rows."""
+    rows = []
+    if not text or not text.strip():
+        return rows
+    size_re = re.compile(r"^\s*([A-Za-z0-9]{1,6}(?:[-/][A-Za-z0-9]{1,6})?)\s*[-:|—–]\s*(.+?)\s*$")
+    for line in text.replace("•", "|").splitlines():
+        m = size_re.match(line)
+        if not m:
+            continue
+        size, measurements = m.group(1).strip(), m.group(2).strip()
+        if not re.search(r"\d", measurements):
+            continue
+        rows.append({"size": size, "measurements": measurements})
+    return rows[:30]
+
+
+def _numbers_by_measurement(text):
+    out = {}
+    patterns = {
+        "chest": r"(?:chest|bust)\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|in|inch|inches)?",
+        "waist": r"waist\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|in|inch|inches)?",
+        "shoulder": r"shoulder\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|in|inch|inches)?",
+        "inseam": r"inseam\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|in|inch|inches)?",
+    }
+    for key, pat in patterns.items():
+        m = re.search(pat, text, re.I)
+        if m:
+            value = float(m.group(1)); unit = (m.group(2) or "cm").lower()
+            if unit.startswith("in"):
+                value *= 2.54
+            out[key] = value
+    return out
+
+
+def _local_recommendation(category, fit_preference, occasion, measurements, chart_text, undertone):
+    rows = _parse_size_chart(chart_text)
+    if not rows:
+        return None
+    target = {"chest": measurements.get("chest_cm"), "waist": measurements.get("waist_cm"), "shoulder": measurements.get("shoulder_cm"), "inseam": measurements.get("inseam_cm")}
+    target = {k: float(v) for k, v in target.items() if v is not None}
+    scored=[]
+    for row in rows:
+        vals=_numbers_by_measurement(row["measurements"])
+        diffs=[]
+        for k,v in target.items():
+            if k in vals:
+                diffs.append(abs(vals[k]-v)/max(v,1.0))
+        score=sum(diffs)/len(diffs) if diffs else 0.18
+        scored.append((score,row,vals))
+    scored.sort(key=lambda x:x[0])
+    chosen=scored[0][1]
+    matched=sum(1 for k in target if k in scored[0][2])
+    confidence=55 if matched else 38
+    if matched>=2: confidence=68
+    if matched>=3: confidence=76
+    if fit_preference.lower() in {"slim","oversized","relaxed"}: confidence=max(45, confidence-5)
+    palette={
+      "warm":["Cream","Camel","Olive","Rust","Warm brown"],
+      "cool":["Navy","Charcoal","White","Burgundy","Cool blue"],
+      "neutral":["Navy","White","Olive","Charcoal","Beige"],
+      "not sure":["Navy","White","Olive","Charcoal","Beige"],
+    }.get((undertone or "Not sure").lower(), ["Navy","White","Olive","Charcoal","Beige"])
+    return {
+      "recommended_size": chosen["size"], "size_chart_rows": rows, "confidence": confidence,
+      "fit_summary": f"{chosen['size']} is the closest match from the seller chart using the measurements you provided. This is an offline fallback because live AI is temporarily unavailable.",
+      "reasoning": "The fallback compared the available chart measurements with your directly entered measurements where the chart text was clear. It did not use your photo as a source of exact body measurements.",
+      "size_notes": "Check whether the seller's numbers are body measurements or garment measurements. The fallback cannot reliably infer that distinction from an unclear chart.",
+      "caveats": "This is a fallback estimate, not a guarantee of fit. Fabric stretch, cut and seller measurement method can change the result.",
+      "next_measurement": "Add the measurement that matches the seller chart but is still missing, such as chest, waist, shoulder or inseam.",
+      "color_palette": palette, "color_combinations": [f"{palette[0]} + {palette[1]}", f"{palette[2]} + {palette[1]}", f"{palette[0]} + {palette[4]}"],
+      "style_tips": [f"Use a {fit_preference.lower()} silhouette as selected.", f"For {occasion.lower()}, keep the main garment simple and add one coordinated accent.", "Check the seller return/exchange policy before ordering when fit is uncertain."],
+      "source":"local_fallback", "ai_unavailable":True
+    }
+
+
+def _local_looks(category, fit, occasion, color, outfit):
+    c=color or "Navy"; o=outfit or "T-shirt + jeans"; occ=(occasion or "Everyday casual").lower()
+    if "formal" in occ or "work" in occ:
+        sets=[(c,"Oxford shirt + tailored trousers","Black","Loafers","Watch + belt"),(c,"Polo + chinos","Beige","Loafers","Watch"),("White","Shirt + blazer + trousers","Charcoal","Formal shoes","Watch + belt")]
+    elif "wedding" in occ or "festive" in occ:
+        sets=[(c,"Kurta + trousers","Cream","Traditional footwear","Watch"),("Ivory","Kurta set + dupatta","Beige","Traditional footwear","Minimal jewellery"),("Navy","Nehru jacket + kurta + trousers","Cream","Traditional footwear","Watch")]
+    elif "party" in occ or "evening" in occ or "date" in occ:
+        sets=[(c,o,"Black","Loafers","Watch"),("Black","Blazer + T-shirt + jeans","Dark denim","Clean sneakers","Watch"),("Burgundy","Polo + dark trousers","Black","Loafers","Watch + belt")]
+    else:
+        sets=[(c,o,"Blue","White sneakers","Watch"),("Olive","Overshirt + T-shirt + trousers","Beige","Neutral sneakers","Watch"),("White","Polo + chinos","Khaki","Casual loafers","Watch + belt")]
+    return {"looks":[{"name":f"Look {i+1}","main_color":a,"outfit":b,"bottom_color":d,"footwear":e,"accessories":f,"why":f"A practical {occ} combination using your selected {fit.lower()} fit preference."} for i,(a,b,d,e,f) in enumerate(sets)] ,"source":"local_fallback","ai_unavailable":True}
 
 @app.post("/api/recommend")
 async def recommend(
@@ -213,45 +358,33 @@ async def recommend(
 
     chart_text = size_chart.strip() if size_chart.strip() else "No size-chart text entered; use the uploaded chart image."
 
-    prompt = f"""CLOTHING CATEGORY: {category}
-HEIGHT: {height_cm} cm
-WEIGHT: {weight_kg if weight_kg is not None else 'not provided'} kg
-DIRECT BODY MEASUREMENTS: {measurement_text}
-PREFERRED FIT: {fit_preference}
-SELLER CHART MEASUREMENT TYPE: {chart_measurement_type}
-COMPLEXION UNDERTONE (USER-SELECTED): {complexion_undertone}
-OCCASION: {occasion}
+    prompt = f"""CATEGORY:{category}
+FIT:{fit_preference}
+OCCASION:{occasion}
+UNDERTONE:{complexion_undertone}
+MEASUREMENTS:{'; '.join(measurements) if measurements else 'none'}
+CHART_TYPE:{chart_measurement_type}
+SELLER_CHART:{size_chart.strip() or '[image attached]'}
 
-SELLER SIZE CHART TEXT:
-{chart_text}
+Return one available size. Include concise evidence, caveat, next missing measurement, 3-5 colors, 2-4 color combinations and 2-4 practical styling tips. Keep every text field short."""
 
-A seller size-chart image may also be attached. Read it if present.
+    model = _model_name()
 
-Task:
-1. Identify the available seller sizes and measurements from the supplied chart. Copy only measurements actually visible in the supplied text/image; never invent missing values. Put every available size into size_chart_rows, with measurements as a concise string such as "Chest 38 in • Shoulder 16 in • Length 27 in".
-2. Compare them with the shopper's explicit measurements when available.
-3. Use height/weight only as secondary context and use the photo only as visual context; do not turn the photo into exact measurements.
-4. Account for the requested fit preference.
-5. Recommend exactly one available seller size, or the closest available size if evidence is incomplete.
-6. Explain what evidence drove the recommendation and what remains uncertain.
-7. If the chart's numbers are ambiguous (for example garment vs body measurements), explicitly say so.
-8. Calibrate confidence conservatively. Do not assign high confidence when key measurements are missing or chart interpretation is uncertain.
-9. Provide 3-5 clothing colors that are likely to harmonize with the user's selected undertone and the photo's visible color context, without making claims about race or ethnicity.
-10. Provide 2-4 simple outfit color combinations for the selected category and occasion.
-11. Provide 2-4 styling tips based on category, preferred fit, and visible clothing/style context. Do not make insulting or appearance-shaming judgments.
-12. If undertone is Not sure, keep the palette flexible and say that lighting and personal preference can change how colors appear."""
+    cache_payload = {"category": category, "fit": fit_preference, "occasion": occasion, "undertone": complexion_undertone, "measurements": measurements, "chart_type": chart_measurement_type, "chart": size_chart.strip(), "chart_image": hashlib.sha256((raw_chart if size_chart_image is not None else b"")).hexdigest()}
+    cache_key = _cache_key("recommend", cache_payload)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return JSONResponse(cached)
 
-    model = os.getenv("FIT_MODEL", "gpt-5.6-luna")
-
-    content = [
-        {"type": "input_text", "text": prompt},
-        {"type": "input_image", "image_url": photo_data_url},
-    ]
+    content = [{"type": "input_text", "text": prompt}]
+    # Photo analysis is opt-in because image input is a major token cost.
+    if os.getenv("FIT_INCLUDE_PHOTO_IN_RECOMMEND", "false").lower() == "true":
+        content.append({"type": "input_image", "image_url": photo_data_url})
     if chart_data_url:
         content.append({"type": "input_image", "image_url": chart_data_url})
 
     try:
-        client = OpenAI(api_key=key, timeout=60.0, max_retries=1)
+        client = _safe_ai_client(key, timeout=60.0)
         response = client.responses.create(
             model=model,
             instructions=SYSTEM,
@@ -264,9 +397,10 @@ Task:
                     "strict": True,
                 }
             },
+            max_output_tokens=800,
         )
         result = json.loads(response.output_text)
-        return JSONResponse(result)
+        return JSONResponse(_cache_put(cache_key, result))
 
     except AuthenticationError as e:
         print(f"OPENAI_AUTH_ERROR model={model}: {e}", flush=True)
@@ -279,7 +413,10 @@ Task:
         return JSONResponse({"error": "OpenAI rejected the request.", "details": str(e)}, status_code=502)
     except RateLimitError as e:
         print(f"OPENAI_RATE_LIMIT model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI rate limit or billing/quota issue.", "details": str(e)}, status_code=502)
+        fallback = _local_recommendation(category, fit_preference, occasion, {"chest_cm": chest_cm, "waist_cm": waist_cm, "shoulder_cm": shoulder_cm, "inseam_cm": inseam_cm}, size_chart, complexion_undertone)
+        if fallback:
+            return JSONResponse(fallback)
+        return _ai_error(e, "size recommendation")
     except APIConnectionError as e:
         print(f"OPENAI_CONNECTION_ERROR model={model}: {e}", flush=True)
         return JSONResponse({"error": "Could not connect to OpenAI.", "details": str(e)}, status_code=502)
@@ -311,38 +448,29 @@ async def build_look(
 
     color = (custom_color.strip() or selected_color.strip() or "Navy")
     outfit = (custom_outfit.strip() or selected_outfit.strip() or "T-shirt + jeans")
-    prompt = f"""Create exactly 3 complete clothing looks for a shopper.
-CATEGORY: {category}
-PREFERRED FIT: {fit_preference}
-OCCASION: {occasion}
-USER-SELECTED UNDERTONE: {complexion_undertone}
-CURRENT MAIN COLOUR: {color}
-CURRENT OUTFIT IDEA: {outfit}
-
-Rules:
-- Make three meaningfully different, wearable looks.
-- Keep the current main colour/outfit idea as one of the three looks, while improving the rest of the styling where useful.
-- Use ordinary clothing names that a customer can understand.
-- Do not infer race or ethnicity.
-- Styling guidance should be practical, not claims about attractiveness.
-- Each look must include main color, outfit, bottom color, footwear and accessories.
-- Keep combinations appropriate to the occasion and category.
-- If the category is a garment such as a T-shirt, the main color applies to that main garment.
-"""
-    model = os.getenv("FIT_MODEL", "gpt-5.6-luna")
+    prompt = f"""Create 3 wearable looks.
+CATEGORY:{category}; FIT:{fit_preference}; OCCASION:{occasion}; UNDERTONE:{complexion_undertone}; COLOR:{color}; BASE:{outfit}
+Keep one look close to COLOR+BASE. Each look needs name, main_color, outfit, bottom_color, footwear, accessories, why. Keep each field concise."""
+    model = _model_name()
+    cache_key = _cache_key("build-look", {"category":category,"fit":fit_preference,"occasion":occasion,"undertone":complexion_undertone,"color":color,"outfit":outfit})
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return JSONResponse(cached)
     try:
-        client = OpenAI(api_key=key, timeout=60.0, max_retries=1)
+        client = _safe_ai_client(key, timeout=60.0)
         response = client.responses.create(
             model=model,
             instructions="You are a practical clothing stylist. Return only the requested JSON.",
             input=prompt,
             text={"format": {"type": "json_schema", "name": "look_builder", "schema": LOOK_SCHEMA, "strict": True}},
+            max_output_tokens=500,
         )
-        return JSONResponse(json.loads(response.output_text))
+        return JSONResponse(_cache_put(cache_key, json.loads(response.output_text)))
     except AuthenticationError:
         return JSONResponse({"error": "OpenAI authentication failed. Check OPENAI_API_KEY in Render."}, status_code=502)
     except RateLimitError as e:
-        return JSONResponse({"error": "OpenAI rate limit or billing/quota issue.", "details": str(e)}, status_code=502)
+        print(f"OPENAI_RATE_LIMIT build_look model={model}: {e}", flush=True)
+        return JSONResponse(_local_looks(category, fit_preference, occasion, color, outfit))
     except BadRequestError as e:
         return JSONResponse({"error": "OpenAI rejected the look-building request.", "details": str(e)}, status_code=502)
     except APIConnectionError as e:
@@ -426,7 +554,7 @@ Return one photorealistic edited image.
             tmp.write(raw_photo)
             temp_path = tmp.name
 
-        client = OpenAI(api_key=key, timeout=120.0, max_retries=1)
+        client = _safe_ai_client(key, timeout=120.0)
         response = client.images.edit(
             model=model,
             image=Path(temp_path),
@@ -455,16 +583,16 @@ Return one photorealistic edited image.
         return JSONResponse({"error": "OpenAI authentication failed. Check OPENAI_API_KEY in Render."}, status_code=502)
     except BadRequestError as e:
         print(f"OPENAI_BAD_REQUEST image_model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI rejected the try-on image request.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "visual try-on")
     except RateLimitError as e:
         print(f"OPENAI_RATE_LIMIT image_model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI rate limit or billing/quota issue.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "visual try-on")
     except APIConnectionError as e:
         print(f"OPENAI_CONNECTION_ERROR image_model={model}: {e}", flush=True)
-        return JSONResponse({"error": "Could not connect to OpenAI for the try-on preview.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "visual try-on")
     except APIError as e:
         print(f"OPENAI_API_ERROR image_model={model}: {e}", flush=True)
-        return JSONResponse({"error": "The try-on image request failed.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "visual try-on")
     except Exception as e:
         print(f"TRY_ON_ERROR model={model}: {e}", flush=True)
         return JSONResponse({"error": "The visual try-on preview failed.", "details": str(e)}, status_code=500)
@@ -580,7 +708,7 @@ Return one photorealistic edited image.
                 if match:
                     image_files.append(stack.enter_context(open(match, "rb")))
 
-            client = OpenAI(api_key=key, timeout=180.0, max_retries=1)
+            client = _safe_ai_client(key, timeout=180.0)
             kwargs = {
                 "model": model,
                 "image": image_files,
@@ -614,16 +742,16 @@ Return one photorealistic edited image.
         return JSONResponse({"error": "OpenAI authentication failed. Check OPENAI_API_KEY in Render."}, status_code=502)
     except BadRequestError as e:
         print(f"OPENAI_BAD_REQUEST exact_try_on model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI rejected the exact-product try-on request.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "exact-product try-on")
     except RateLimitError as e:
         print(f"OPENAI_RATE_LIMIT exact_try_on model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI rate limit or billing/quota issue.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "exact-product try-on")
     except APIConnectionError as e:
         print(f"OPENAI_CONNECTION_ERROR exact_try_on model={model}: {e}", flush=True)
-        return JSONResponse({"error": "Could not connect to OpenAI for the exact-product preview.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "exact-product try-on")
     except APIError as e:
         print(f"OPENAI_API_ERROR exact_try_on model={model}: {e}", flush=True)
-        return JSONResponse({"error": "The exact-product try-on request failed.", "details": str(e)}, status_code=502)
+        return _ai_error(e, "exact-product try-on")
     except Exception as e:
         print(f"EXACT_TRY_ON_ERROR model={model}: {e}", flush=True)
         return JSONResponse({"error": "The exact-product visual try-on failed.", "details": f"{type(e).__name__}: {e}"}, status_code=500)
