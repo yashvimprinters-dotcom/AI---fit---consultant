@@ -5,11 +5,13 @@ import tempfile
 import re
 import time
 import hashlib
+import asyncio
+from collections import defaultdict
 from collections import OrderedDict
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
@@ -21,7 +23,81 @@ from openai import (
     RateLimitError,
 )
 
-app = FastAPI(title="FITORA v27")
+app = FastAPI(
+    title="FITORA",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
+
+# Production hardening: keep the public API small, reject oversized requests,
+# add browser security headers, and apply per-instance request throttling.
+RATE_BUCKETS = defaultdict(list)
+RATE_LOCK = asyncio.Lock()
+RATE_RULES = {
+    "/api/recommend": (12, 60),
+    "/api/build-look": (12, 60),
+    "/api/build-looks": (20, 60),
+    "/api/try-on": (4, 60),
+    "/api/try-on-exact": (4, 60),
+    "__default__": (90, 60),
+}
+MAX_REQUEST_BYTES = 45 * 1024 * 1024
+
+async def _allow_request(request: Request):
+    if request.method in {"GET", "HEAD", "OPTIONS"}:
+        return True, 0
+    path = request.url.path
+    limit, window = RATE_RULES.get(path, RATE_RULES["__default__"])
+    # Render normally supplies X-Forwarded-For from its proxy. If unavailable,
+    # fall back to the socket address. This is a protective throttle, not auth.
+    forwarded = request.headers.get("x-forwarded-for", "")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    key = f"{client_ip}:{path}"
+    now = time.monotonic()
+    async with RATE_LOCK:
+        bucket = [t for t in RATE_BUCKETS[key] if now - t < window]
+        if len(bucket) >= limit:
+            RATE_BUCKETS[key] = bucket
+            return False, max(1, int(window - (now - bucket[0])))
+        bucket.append(now)
+        RATE_BUCKETS[key] = bucket
+        # Keep memory bounded.
+        if len(RATE_BUCKETS) > 3000:
+            for k in list(RATE_BUCKETS)[:500]:
+                RATE_BUCKETS.pop(k, None)
+    return True, 0
+
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_REQUEST_BYTES:
+                return JSONResponse({"error": "Request is too large."}, status_code=413)
+        except ValueError:
+            return JSONResponse({"error": "Invalid request."}, status_code=400)
+    allowed, retry_after = await _allow_request(request)
+    if not allowed:
+        return JSONResponse(
+            {"error": "Too many requests. Please wait a moment and try again.", "code": "request_rate_limited"},
+            status_code=429,
+            headers={"Retry-After": str(retry_after)},
+        )
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Never expose stack traces or provider/internal details to browsers.
+        return JSONResponse({"error": "FITORA could not complete that request."}, status_code=500)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 SYSTEM = """You are FITORA, a practical clothing fit and style consultant.
@@ -118,10 +194,25 @@ def image_to_data_url(raw: bytes, mime: str) -> str:
 def validate_image(upload: UploadFile, raw: bytes, label: str):
     if len(raw) > 8 * 1024 * 1024:
         return JSONResponse({"error": f"{label} must be under 8 MB."}, status_code=400)
-    mime = upload.content_type or "image/jpeg"
-    if not mime.startswith("image/"):
-        return JSONResponse({"error": f"Please upload an image file for {label.lower()}."}, status_code=400)
+    mime = (upload.content_type or "").lower()
+    allowed = {"image/jpeg", "image/png", "image/webp"}
+    if mime not in allowed:
+        return JSONResponse({"error": f"Please upload a JPG, PNG, or WebP image for {label.lower()}."}, status_code=400)
+    # Check the actual file signature instead of trusting Content-Type alone.
+    signatures = {
+        "image/jpeg": raw[:3] == b"\xff\xd8\xff",
+        "image/png": raw[:8] == b"\x89PNG\r\n\x1a\n",
+        "image/webp": len(raw) >= 12 and raw[:4] == b"RIFF" and raw[8:12] == b"WEBP",
+    }
+    if not signatures.get(mime, False):
+        return JSONResponse({"error": f"The {label.lower()} file is not a valid image."}, status_code=400)
     return None
+
+def _bounded(value: str, limit: int, label: str = "value"):
+    value = (value or "").strip()
+    if len(value) > limit:
+        raise ValueError(f"{label} is too long.")
+    return value
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -132,7 +223,7 @@ def home():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "product": "FITORA v27", "ai_model": _model_name(), "ai_configured": bool(os.getenv("OPENAI_API_KEY")), "photo_in_recommendation": os.getenv("FIT_INCLUDE_PHOTO_IN_RECOMMEND", "false").lower() == "true"}
+    return {"status": "ok", "product": "FITORA", "security": "hardened", "ai_model": _model_name(), "ai_configured": bool(os.getenv("OPENAI_API_KEY")), "photo_in_recommendation": os.getenv("FIT_INCLUDE_PHOTO_IN_RECOMMEND", "false").lower() == "true"}
 
 
 
@@ -318,6 +409,16 @@ async def recommend(
     if demo:
         return JSONResponse(demo_result())
 
+    try:
+        category = _bounded(category, 80, "Category")
+        fit_preference = _bounded(fit_preference, 40, "Fit preference")
+        occasion = _bounded(occasion, 80, "Occasion")
+        complexion_undertone = _bounded(complexion_undertone, 40, "Undertone")
+        chart_measurement_type = _bounded(chart_measurement_type, 40, "Chart type")
+        size_chart = _bounded(size_chart, 6000, "Size chart")
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
     if not size_chart.strip() and size_chart_image is None:
         return JSONResponse({
             "error": "Provide the seller's size chart as text or upload a screenshot/photo of the chart."
@@ -406,11 +507,11 @@ Return one available size. Include concise evidence, caveat, next missing measur
         print(f"OPENAI_AUTH_ERROR model={model}: {e}", flush=True)
         return JSONResponse({
             "error": "OpenAI authentication failed. Check OPENAI_API_KEY in Render.",
-            "details": "The API key was rejected by OpenAI."
+            "details": "Provider authentication failed."
         }, status_code=502)
     except BadRequestError as e:
         print(f"OPENAI_BAD_REQUEST model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI rejected the request.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "OpenAI rejected the request.", "details": "The request was rejected by an external service."}, status_code=502)
     except RateLimitError as e:
         print(f"OPENAI_RATE_LIMIT model={model}: {e}", flush=True)
         fallback = _local_recommendation(category, fit_preference, occasion, {"chest_cm": chest_cm, "waist_cm": waist_cm, "shoulder_cm": shoulder_cm, "inseam_cm": inseam_cm}, size_chart, complexion_undertone)
@@ -419,16 +520,16 @@ Return one available size. Include concise evidence, caveat, next missing measur
         return _ai_error(e, "size recommendation")
     except APIConnectionError as e:
         print(f"OPENAI_CONNECTION_ERROR model={model}: {e}", flush=True)
-        return JSONResponse({"error": "Could not connect to OpenAI.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "Could not connect to OpenAI.", "details": "The request was rejected by an external service."}, status_code=502)
     except APIError as e:
         print(f"OPENAI_API_ERROR model={model}: {e}", flush=True)
-        return JSONResponse({"error": "OpenAI API error.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "OpenAI API error.", "details": "The request was rejected by an external service."}, status_code=502)
     except json.JSONDecodeError as e:
         print(f"OPENAI_JSON_ERROR model={model}: {e}", flush=True)
-        return JSONResponse({"error": "The AI returned an unexpected response format.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "The AI returned an unexpected response format.", "details": "The request was rejected by an external service."}, status_code=502)
     except Exception as e:
         print(f"UNEXPECTED_RECOMMEND_ERROR model={model}: {type(e).__name__}: {e}", flush=True)
-        return JSONResponse({"error": "AI request failed.", "details": f"{type(e).__name__}: {e}"}, status_code=500)
+        return JSONResponse({"error": "AI request failed.", "details": "An internal error occurred."}, status_code=500)
 
 
 @app.post("/api/build-look")
@@ -442,6 +543,17 @@ async def build_look(
     custom_color: str = Form(""),
     custom_outfit: str = Form(""),
 ):
+    try:
+        category = _bounded(category, 80, "Category")
+        fit_preference = _bounded(fit_preference, 40, "Fit preference")
+        occasion = _bounded(occasion, 80, "Occasion")
+        complexion_undertone = _bounded(complexion_undertone, 40, "Undertone")
+        selected_color = _bounded(selected_color, 60, "Color")
+        selected_outfit = _bounded(selected_outfit, 120, "Outfit")
+        custom_color = _bounded(custom_color, 60, "Custom color")
+        custom_outfit = _bounded(custom_outfit, 120, "Custom outfit")
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         return JSONResponse({"error": "Server API key is not configured. Configure OPENAI_API_KEY in Render."}, status_code=500)
@@ -472,13 +584,13 @@ Keep one look close to COLOR+BASE. Each look needs name, main_color, outfit, bot
         print(f"OPENAI_RATE_LIMIT build_look model={model}: {e}", flush=True)
         return JSONResponse(_local_looks(category, fit_preference, occasion, color, outfit))
     except BadRequestError as e:
-        return JSONResponse({"error": "OpenAI rejected the look-building request.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "OpenAI rejected the look-building request.", "details": "The request was rejected by an external service."}, status_code=502)
     except APIConnectionError as e:
-        return JSONResponse({"error": "Could not connect to OpenAI.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "Could not connect to OpenAI.", "details": "The request was rejected by an external service."}, status_code=502)
     except APIError as e:
-        return JSONResponse({"error": "OpenAI API error.", "details": str(e)}, status_code=502)
+        return JSONResponse({"error": "OpenAI API error.", "details": "The request was rejected by an external service."}, status_code=502)
     except Exception as e:
-        return JSONResponse({"error": "Could not build the looks.", "details": f"{type(e).__name__}: {e}"}, status_code=500)
+        return JSONResponse({"error": "Could not build the looks.", "details": "An internal error occurred."}, status_code=500)
 
 
 @app.post("/api/try-on")
@@ -555,14 +667,15 @@ Return one photorealistic edited image.
             temp_path = tmp.name
 
         client = _safe_ai_client(key, timeout=120.0)
-        response = client.images.edit(
-            model=model,
-            image=Path(temp_path),
-            prompt=prompt,
-            size="1024x1536",
-            quality=os.getenv("FIT_IMAGE_QUALITY", "medium"),
-            output_format="jpeg",
-        )
+        async with _IMAGE_SEMAPHORE:
+            response = client.images.edit(
+                model=model,
+                image=Path(temp_path),
+                prompt=prompt,
+                size="1024x1536",
+                quality=os.getenv("FIT_IMAGE_QUALITY", "medium"),
+                output_format="jpeg",
+            )
         item = response.data[0]
         b64 = getattr(item, "b64_json", None)
         if not b64:
@@ -595,7 +708,7 @@ Return one photorealistic edited image.
         return _ai_error(e, "visual try-on")
     except Exception as e:
         print(f"TRY_ON_ERROR model={model}: {e}", flush=True)
-        return JSONResponse({"error": "The visual try-on preview failed.", "details": str(e)}, status_code=500)
+        return JSONResponse({"error": "The visual try-on preview failed.", "details": "The request was rejected by an external service."}, status_code=500)
     finally:
         if temp_path:
             try:
@@ -606,6 +719,7 @@ Return one photorealistic edited image.
 
 
 # V17 exact-product visual try-on
+_IMAGE_SEMAPHORE = asyncio.Semaphore(2)
 @app.post("/api/try-on-exact")
 async def try_on_exact(
     photo: UploadFile = File(...),
@@ -721,7 +835,8 @@ Return one photorealistic edited image.
             fidelity = os.getenv("FIT_IMAGE_INPUT_FIDELITY", "high").strip().lower()
             if fidelity in {"high", "low"}:
                 kwargs["input_fidelity"] = fidelity
-            response = client.images.edit(**kwargs)
+            async with _IMAGE_SEMAPHORE:
+                response = client.images.edit(**kwargs)
             item = response.data[0]
             b64 = getattr(item, "b64_json", None)
             if not b64:
@@ -754,7 +869,7 @@ Return one photorealistic edited image.
         return _ai_error(e, "exact-product try-on")
     except Exception as e:
         print(f"EXACT_TRY_ON_ERROR model={model}: {e}", flush=True)
-        return JSONResponse({"error": "The exact-product visual try-on failed.", "details": f"{type(e).__name__}: {e}"}, status_code=500)
+        return JSONResponse({"error": "The exact-product visual try-on failed.", "details": "An internal error occurred."}, status_code=500)
     finally:
         for _, path in temp_paths:
             try:
