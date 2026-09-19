@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#111111">
-<title>AI Fit Consultant • Personal Style</title>
+<meta name="theme-color" content="#10051f">
+<title>FITORA • Your fit. Your style. Your look.</title>
 <style>
 :root{--ink:#121212;--muted:#6f737b;--line:#e7e8ec;--soft:#f7f7f9;--card:#fff;--accent:#7c3aed;--accent2:#ec4899;--green:#10b981;--shadow:0 14px 45px rgba(20,20,35,.08)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#f6f3ff 0,#f7f8fb 360px,#f4f5f7 100%);color:var(--ink)}
@@ -25,14 +25,52 @@ label{display:block;font-size:13px;font-weight:800;margin:15px 0 7px}input,selec
 /* v20: simpler customer-first home */
 .customer-menu-row{margin:10px 0 12px}.more-menu-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0;padding:13px 16px;border-radius:16px;background:#fff;color:#171717;border:1px solid #e2e3e8;box-shadow:0 7px 22px rgba(20,20,35,.06);font-size:14px;font-weight:850}.more-menu-btn span:nth-child(2){flex:1;text-align:left}.more-chevron{font-size:20px;color:#7c3aed}.quick-start{display:grid;gap:10px;margin:12px 0 16px}.quick-card{display:flex;align-items:center;gap:12px;text-align:left;margin:0!important;padding:14px 15px!important;background:#fff!important;color:#171717!important;border:1px solid #e4e5ea!important;border-radius:18px!important;box-shadow:0 8px 25px rgba(20,20,35,.055)!important}.quick-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#f1ebff;font-size:20px;flex:none}.quick-card span:nth-child(2){flex:1}.quick-card b{display:block;font-size:14px}.quick-card small{display:block;color:#737680;font-size:11px;margin-top:3px;font-weight:500}.quick-arrow{font-size:25px;color:#8a52dc}.customer-menu{display:none;position:fixed;inset:0;z-index:80}.customer-menu.open{display:block}.customer-menu-backdrop{position:absolute;inset:0;background:rgba(10,8,15,.5)}.customer-menu-panel{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border-radius:24px;padding:16px;box-shadow:0 25px 80px rgba(0,0,0,.3);animation:slideUp .18s ease}.customer-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.customer-menu-head b{font-size:18px}.customer-menu-head small{display:block;color:#777;margin-top:3px}.menu-close{width:38px!important;height:38px!important;padding:0!important;margin:0!important;background:#f2f2f5!important;color:#111!important}.customer-menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.customer-menu-grid .utility-btn{min-height:58px;font-size:12px;margin:0!important}.customer-menu-grid .utility-btn:hover{transform:none}.customer-menu-grid .utility-btn:active{transform:scale(.98)}
 @media(min-width:700px){.quick-start{grid-template-columns:repeat(3,1fr)}.quick-card{min-height:110px}.customer-menu-panel{left:50%;right:auto;width:520px;transform:translateX(-50%)}}
+
+/* v21 FITORA brand system */
+body{background:linear-gradient(180deg,#f8f7fc 0,#f4f5f9 48%,#f1f2f6 100%);padding-bottom:72px}
+.fitora-hero{background:radial-gradient(circle at 92% 8%,rgba(197,42,255,.65),transparent 27%),radial-gradient(circle at 0% 105%,rgba(255,32,153,.42),transparent 25%),linear-gradient(135deg,#090616 0%,#12092a 52%,#21103a 100%);padding:18px 18px 30px;border-radius:0 0 34px 34px;box-shadow:0 18px 50px rgba(45,18,75,.22)}
+.fitora-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fitora-logo{width:156px;height:auto;display:block;filter:drop-shadow(0 5px 15px rgba(192,48,255,.18))}
+.hero-account{width:44px!important;height:44px!important;padding:0!important;margin:0!important;border-radius:50%!important;background:rgba(255,255,255,.12)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;font-size:23px!important;box-shadow:none!important}
+.fitora-kicker{margin-top:24px;color:#e5d9ff;font-size:11px;font-weight:900;letter-spacing:.18em}
+.fitora-hero h1{font-size:35px;line-height:1.04;margin:10px 0 9px;letter-spacing:-.035em}
+.fitora-hero h1 span{background:linear-gradient(90deg,#fff,#f0a7ff,#ff8cae);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fitora-hero p{font-size:15px;color:#d7cfe2}
+.fitora-hero .hero-badges{margin-top:16px}
+.fitora-hero .hero-badge{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.16);color:#fff}
+main{max-width:920px;padding-top:12px}
+.section-nav{top:0;padding:10px 0;background:rgba(248,247,252,.88)}
+.nav-tab{min-height:68px;border-radius:20px;font-size:14px;background:rgba(255,255,255,.9)}
+.nav-tab.active{background:linear-gradient(135deg,#4c20d9,#8d21e8 55%,#ed2695);border-color:transparent;box-shadow:0 12px 28px rgba(112,45,219,.22)}
+.quick-start{gap:10px;margin:10px 0 18px}
+.quick-card{min-height:82px;border:0!important;border-radius:20px!important;color:#fff!important;padding:14px 16px!important;box-shadow:0 12px 28px rgba(55,28,95,.14)!important}
+.quick-card:nth-child(1){background:linear-gradient(135deg,#5424db,#8d2be9)!important}
+.quick-card:nth-child(2){background:linear-gradient(135deg,#b617d5,#f02691)!important}
+.quick-card:nth-child(3){background:linear-gradient(135deg,#3233dc,#5a56f0)!important}
+.quick-icon{background:rgba(255,255,255,.16);color:#fff}
+.quick-card small{color:rgba(255,255,255,.8)}
+.quick-arrow{color:#fff}
+.customer-menu-row{margin:8px 0 12px}
+.more-menu-btn{border-radius:18px;background:#fff}
+.card{border-radius:24px}
+.section-card{box-shadow:0 10px 32px rgba(44,34,67,.065)}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:45;display:grid;grid-template-columns:repeat(3,1fr);height:64px;padding:7px 12px calc(7px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(220,220,230,.9);box-shadow:0 -8px 28px rgba(20,20,35,.08)}
+.bottom-nav button{margin:0!important;padding:6px 4px!important;background:transparent!important;color:#70727b!important;border:0!important;box-shadow:none!important;font-size:11px!important;font-weight:800!important}
+.bottom-nav button.active{color:#6d20df!important}
+.bottom-nav .bn-icon{display:block;font-size:20px;line-height:22px}
+@media(max-width:440px){.fitora-logo{width:145px}.fitora-hero h1{font-size:31px}.fitora-hero{padding-left:16px;padding-right:16px}.nav-tab{min-height:64px;font-size:13px}}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">AI FIT CONSULTANT • PERSONAL STYLE</div>
-  <h1>Find your fit.<br>Build your look.<br>See it on you.</h1>
-  <p>A simple two-step fashion experience: first understand your size, then explore colours, outfits and visual try-on.</p>
-  <div class="hero-badges"><span class="hero-badge">👕 Size guidance</span><span class="hero-badge">🎨 48+ colours</span><span class="hero-badge">✨ AI visual preview</span></div>
+<header class="fitora-hero">
+  <div class="fitora-topbar">
+    <img class="fitora-logo" src="/static/assets/fitora-logo.png" alt="FITORA — Your fit. Your style. Your look.">
+    <button type="button" class="hero-account" id="heroAccountBtn" aria-label="Open account">♙</button>
+  </div>
+  <div class="fitora-kicker">PERSONAL FASHION ASSISTANT</div>
+  <h1>Smart fashion,<br><span>made personal.</span></h1>
+  <p>Find your size. Build your look. See it on you.</p>
+  <div class="hero-badges"><span class="hero-badge">📏 Smart size</span><span class="hero-badge">✨ AI styling</span><span class="hero-badge">📸 Virtual try-on</span></div>
 </header>
 <main>
 <nav class="section-nav" aria-label="Consultant sections">
@@ -207,6 +245,11 @@ XL — chest 42 in, length 30 in"></textarea>
 <div class="modal-backdrop" id="feedbackModal"><div class="modal"><div class="modal-head"><h3>💬 Tell us what you think</h3><button class="modal-close" type="button" data-close="feedbackModal">×</button></div><p class="muted">A quick message helps improve the customer experience.</p><label>How was your experience?</label><select id="feedbackRating"><option>Very good</option><option>Good</option><option>Okay</option><option>Needs improvement</option></select><label>Your feedback</label><textarea id="feedbackText" placeholder="What was easy, confusing, missing or useful?"></textarea><button type="button" id="sendFeedback">Send feedback</button></div></div>
 <div class="modal-backdrop" id="settingsModal"><div class="modal"><div class="modal-head"><h3>⚙️ App settings</h3><button class="modal-close" type="button" data-close="settingsModal">×</button></div><div class="setting-row"><div><b>Dark mode</b><small>Use a darker interface.</small></div><input class="switch" id="darkModeToggle" type="checkbox"></div><div class="setting-row"><div><b>Remember last tab</b><small>Open the app where you left off.</small></div><input class="switch" id="rememberTabToggle" type="checkbox" checked></div><div class="setting-row"><div><b>Show helpful tips</b><small>Keep short guidance messages visible.</small></div><input class="switch" id="tipsToggle" type="checkbox" checked></div><button type="button" class="secondary-btn" data-close="settingsModal">Done</button></div></div>
 <div class="toast" id="toast"></div>
+<nav class="bottom-nav" aria-label="Main navigation">
+  <button type="button" class="active" id="bottomHome"><span class="bn-icon">⌂</span>Home</button>
+  <button type="button" id="bottomSaved"><span class="bn-icon">♡</span>Saved</button>
+  <button type="button" id="bottomAccount"><span class="bn-icon">♙</span>Account</button>
+</nav>
 <footer>AI Fit Consultant • Fit • Style • Visual Try-On</footer>
 </main>
 <script>
@@ -636,6 +679,12 @@ document.getElementById('v17_save_look')?.addEventListener('click',()=>{document
  document.querySelectorAll('[data-scroll]').forEach(b=>b.addEventListener('click',()=>{const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}));
  document.querySelectorAll('.customer-menu-grid .utility-btn').forEach(b=>b.addEventListener('click',()=>{if(b.id!=='accountBtn'&&b.id!=='savedBtn'&&b.id!=='feedbackBtn'&&b.id!=='settingsBtn')return;setTimeout(close,80);}));
 })();
+
+// v21 FITORA navigation
+document.getElementById('heroAccountBtn')?.addEventListener('click',()=>document.getElementById('moreMenuBtn')?.click());
+document.getElementById('bottomSaved')?.addEventListener('click',()=>document.getElementById('savedBtn')?.click());
+document.getElementById('bottomAccount')?.addEventListener('click',()=>document.getElementById('moreMenuBtn')?.click());
+document.getElementById('bottomHome')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 </script>
 </body>
 </html>
