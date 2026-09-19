@@ -18,6 +18,9 @@ label{display:block;font-size:13px;font-weight:800;margin:15px 0 7px}input,selec
 .feature-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px}.feature-mini{background:rgba(255,255,255,.78);border:1px solid #e8e5ef;border-radius:16px;padding:12px}.feature-mini b{display:block;font-size:13px}.feature-mini span{display:block;color:#747780;font-size:11px;margin-top:4px;line-height:1.35}
 @media(max-width:680px){.grid{grid-template-columns:1fr}.color-grid{grid-template-columns:repeat(4,1fr)}.look-cards{grid-template-columns:1fr}.feature-strip{grid-template-columns:1fr 1fr}.nav-tab{min-height:70px;font-size:14px}}
 @media(max-width:440px){main{padding-left:12px;padding-right:12px}header h1{font-size:29px}.color-grid{grid-template-columns:repeat(3,1fr)}.outfit-grid{grid-template-columns:1fr}.custom-row{grid-template-columns:1fr 1fr}.feature-strip{grid-template-columns:1fr}.section-subtitle{margin-left:0}.section-number{width:34px;height:34px}.card{padding:16px;border-radius:20px}}
+
+/* v19 customer account & utility layer */
+.utility-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 12px}.utility-btn{margin:0!important;background:#fff;color:#171717;border:1px solid #e2e3e8;min-height:48px;padding:10px 8px;font-size:12px;box-shadow:0 5px 18px rgba(20,20,35,.05)}.utility-btn.active{background:#111;color:#fff;border-color:#111}.utility-count{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:999px;align-items:center;justify-content:center;background:#eee;color:#111;font-size:10px;margin-left:3px}.utility-btn.active .utility-count{background:#fff;color:#111}.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(12,10,18,.55);z-index:50;padding:18px;align-items:flex-end;justify-content:center}.modal-backdrop.open{display:flex}.modal{width:min(560px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 25px 70px rgba(0,0,0,.28);animation:slideUp .18s ease}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.modal-head h3{margin:0;font-size:21px}.modal-close{width:40px!important;height:40px!important;padding:0!important;margin:0!important;border-radius:12px!important;background:#f2f2f5!important;color:#111!important}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.saved-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.saved-card{border:1px solid #e2e3e8;border-radius:16px;overflow:hidden;background:#fff}.saved-card img{width:100%;aspect-ratio:4/5;object-fit:cover;background:#f2f2f4}.saved-card-body{padding:10px}.saved-card-body b{display:block;font-size:13px}.saved-card-body small{display:block;color:#70737b;line-height:1.4;margin-top:4px}.saved-card-body button{margin-top:8px;padding:10px;font-size:12px}.empty-state{padding:22px;text-align:center;border:1px dashed #d6d7dc;border-radius:16px;color:#737680;background:#fafafd}.setting-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #ececf0}.setting-row:last-child{border-bottom:0}.setting-row b{font-size:14px}.setting-row small{display:block;color:#777;margin-top:3px;line-height:1.35}.switch{width:48px!important;height:28px!important;padding:0!important;appearance:none;border-radius:999px!important;background:#ddd!important;position:relative;flex:none;cursor:pointer}.switch:checked{background:#111!important}.switch:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.2)}.switch:checked:after{transform:translateX(20px)}.profile-chip{display:none;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:#f0edf7;color:#4c1d95;font-size:12px;font-weight:800;margin:0 0 10px}.profile-chip.show{display:flex}.profile-dot{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#7c3aed;color:#fff;font-size:11px}.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:#111;color:#fff;padding:12px 16px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;z-index:70;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}@keyframes slideUp{from{transform:translateY(15px);opacity:.6}to{transform:translateY(0);opacity:1}}@media(max-width:560px){.utility-bar{grid-template-columns:repeat(4,1fr)}.utility-btn{font-size:11px;min-height:52px}.saved-grid{grid-template-columns:1fr 1fr}.modal-backdrop{padding:10px}.modal{border-radius:22px;padding:17px}}
 </style>
 </head>
 <body>
@@ -32,6 +35,13 @@ label{display:block;font-size:13px;font-weight:800;margin:15px 0 7px}input,selec
   <button type="button" class="nav-tab active" data-target="fitSection">👕 <span>Clothes Fitting</span></button>
   <button type="button" class="nav-tab" data-target="styleSection">🎨 <span>Colour & Visual Try-On</span></button>
 </nav>
+<div class="profile-chip" id="profileChip"><span class="profile-dot" id="profileDot">Y</span><span id="profileChipText">Welcome</span></div>
+<div class="utility-bar" aria-label="Customer tools">
+  <button type="button" class="utility-btn" id="accountBtn">👤 <span id="accountLabel">Sign up</span></button>
+  <button type="button" class="utility-btn" id="savedBtn">♡ Saved <span class="utility-count" id="savedCount">0</span></button>
+  <button type="button" class="utility-btn" id="feedbackBtn">💬 Feedback</button>
+  <button type="button" class="utility-btn" id="settingsBtn">⚙️ Settings</button>
+</div>
 <div class="feature-strip" aria-label="What you can do">
   <div class="feature-mini"><b>📏 Find your size</b><span>Use measurements + seller chart.</span></div>
   <div class="feature-mini"><b>🧩 Build a look</b><span>Mix outfit, footwear & accessories.</span></div>
@@ -151,6 +161,7 @@ XL — chest 42 in, length 30 in"></textarea>
     <div id="tryOnStatus" class="tryon-status"></div>
     <img id="tryOnImage" class="preview" alt="AI visual clothing try-on preview" style="display:none">
     <div class="grid preview-actions" id="previewActions" style="display:none">
+      <button type="button" class="secondary-btn" id="saveLookBtn">♡ Save look</button>
       <button type="button" class="secondary-btn" id="downloadTryOn">⬇️ Save preview</button>
       <button type="button" class="secondary-btn" id="shareTryOn">↗️ Share look</button>
     </div>
@@ -176,6 +187,13 @@ XL — chest 42 in, length 30 in"></textarea>
 </section>
 
 <section class="card"><strong>Privacy & accuracy</strong><p class="muted">This MVP does not intentionally store uploaded photos. Recommendations are estimates. Visual try-on images are generated previews and may not represent exact garment fit, fabric or measurements.</p></section>
+
+<!-- v19 customer tools -->
+<div class="modal-backdrop" id="accountModal"><div class="modal"><div class="modal-head"><h3>👤 Your profile</h3><button class="modal-close" type="button" data-close="accountModal">×</button></div><p class="muted">Create a simple profile so your saved looks and preferences are easier to manage on this device.</p><label>Your name</label><input id="profileName" type="text" placeholder="e.g. Ashish"><label>Email</label><input id="profileEmail" type="email" placeholder="you@example.com"><div class="hint">Prototype note: this version keeps profile details in this browser. Cloud sign-in can be connected later without changing the customer flow.</div><div class="modal-actions"><button type="button" id="profileSave">Create profile</button><button type="button" class="secondary-btn" data-close="accountModal">Cancel</button></div></div></div>
+<div class="modal-backdrop" id="savedModal"><div class="modal"><div class="modal-head"><h3>♡ Saved looks</h3><button class="modal-close" type="button" data-close="savedModal">×</button></div><p class="muted">Your saved previews stay on this device.</p><div id="savedGrid" class="saved-grid"></div><button type="button" class="secondary-btn" id="clearSaved">Clear saved looks</button></div></div>
+<div class="modal-backdrop" id="feedbackModal"><div class="modal"><div class="modal-head"><h3>💬 Tell us what you think</h3><button class="modal-close" type="button" data-close="feedbackModal">×</button></div><p class="muted">A quick message helps improve the customer experience.</p><label>How was your experience?</label><select id="feedbackRating"><option>Very good</option><option>Good</option><option>Okay</option><option>Needs improvement</option></select><label>Your feedback</label><textarea id="feedbackText" placeholder="What was easy, confusing, missing or useful?"></textarea><button type="button" id="sendFeedback">Send feedback</button></div></div>
+<div class="modal-backdrop" id="settingsModal"><div class="modal"><div class="modal-head"><h3>⚙️ App settings</h3><button class="modal-close" type="button" data-close="settingsModal">×</button></div><div class="setting-row"><div><b>Dark mode</b><small>Use a darker interface.</small></div><input class="switch" id="darkModeToggle" type="checkbox"></div><div class="setting-row"><div><b>Remember last tab</b><small>Open the app where you left off.</small></div><input class="switch" id="rememberTabToggle" type="checkbox" checked></div><div class="setting-row"><div><b>Show helpful tips</b><small>Keep short guidance messages visible.</small></div><input class="switch" id="tipsToggle" type="checkbox" checked></div><button type="button" class="secondary-btn" data-close="settingsModal">Done</button></div></div>
+<div class="toast" id="toast"></div>
 <footer>AI Fit Consultant • Fit • Style • Visual Try-On</footer>
 </main>
 <script>
@@ -494,6 +512,7 @@ root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dat
     <button type="button" class="secondary-btn" id="v17_change_outer">Change Outerwear Only</button>
     <button type="button" class="secondary-btn" id="v17_change_shoe">Change Footwear Only</button>
     <button type="button" class="secondary-btn" id="v17_change_acc">Change Accessory Only</button>
+    <button type="button" class="secondary-btn" id="v17_save_look">♡ Save this look</button>
   </div>
   <div id="v17_status" class="tryon-status"></div>
   <img id="v17_image" class="preview" alt="Exact product visual try-on preview" style="display:none">
@@ -553,5 +572,44 @@ root.querySelectorAll(".v15-tabs button").forEach(b=>b.onclick=()=>{active=b.dat
 })();
 </script>
 
+
+<script>
+// v19: simple customer profile, saved looks, feedback and settings.
+(function(){
+ const KEY={profile:'afc_profile_v1',saved:'afc_saved_v1',settings:'afc_settings_v1'};
+ const $=id=>document.getElementById(id);
+ const safeGet=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
+ const safeSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+ let profile=safeGet(KEY.profile,null); let saved=safeGet(KEY.saved,[]);
+ let settings=Object.assign({dark:false,rememberTab:true,tips:true},safeGet(KEY.settings,{}));
+ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
+ function openModal(id){$(id)?.classList.add('open')} function closeModal(id){$(id)?.classList.remove('open')}
+ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+ document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+ function renderProfile(){if(!profile){$('accountLabel').textContent='Sign up';$('profileChip').classList.remove('show');return} $('accountLabel').textContent='Profile';$('profileChip').classList.add('show');$('profileChipText').textContent='Hi, '+profile.name;$('profileDot').textContent=(profile.name||'Y').trim().charAt(0).toUpperCase();$('profileName').value=profile.name||'';$('profileEmail').value=profile.email||'';}
+ function renderSaved(){ $('savedCount').textContent=saved.length; const g=$('savedGrid'); if(!saved.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1">No saved looks yet.<br>Generate a look and tap <b>♡ Save look</b>.</div>';return;} g.innerHTML=saved.map((x,i)=>`<div class="saved-card">${x.image?`<img src="${x.image}" alt="Saved look">`:''}<div class="saved-card-body"><b>${escapeHtml(x.color||'Look')} • ${escapeHtml(x.outfit||'Style')}</b><small>${escapeHtml(x.bottom||'')} ${x.shoes?'• '+escapeHtml(x.shoes):''}</small><button type="button" class="secondary-btn remove-saved" data-i="${i}">Remove</button></div></div>`).join(''); g.querySelectorAll('.remove-saved').forEach(b=>b.addEventListener('click',()=>{saved.splice(Number(b.dataset.i),1);safeSet(KEY.saved,saved);renderSaved();toast('Look removed');}));}
+ function applySettings(){ $('darkModeToggle').checked=!!settings.dark; $('rememberTabToggle').checked=!!settings.rememberTab; $('tipsToggle').checked=!!settings.tips; document.body.classList.toggle('v19-dark',!!settings.dark);}
+ $('accountBtn').addEventListener('click',()=>{renderProfile();openModal('accountModal')});
+ $('savedBtn').addEventListener('click',()=>{renderSaved();openModal('savedModal')});
+ $('feedbackBtn').addEventListener('click',()=>openModal('feedbackModal'));
+ $('settingsBtn').addEventListener('click',()=>openModal('settingsModal'));
+ $('profileSave').addEventListener('click',()=>{const name=$('profileName').value.trim(),email=$('profileEmail').value.trim();if(!name||!email){toast('Please enter your name and email');return}profile={name,email};safeSet(KEY.profile,profile);renderProfile();closeModal('accountModal');toast('Profile created on this device');});
+ $('sendFeedback').addEventListener('click',()=>{const text=$('feedbackText').value.trim(),rating=$('feedbackRating').value;if(!text){toast('Please add a short message');return} const feedback=safeGet('afc_feedback_v1',[]);feedback.push({rating,text,at:new Date().toISOString()});safeSet('afc_feedback_v1',feedback);$('feedbackText').value='';closeModal('feedbackModal');toast('Thanks — feedback saved');});
+ $('clearSaved').addEventListener('click',()=>{if(!saved.length){toast('Nothing to clear');return}if(confirm('Clear all saved looks on this device?')){saved=[];safeSet(KEY.saved,saved);renderSaved();toast('Saved looks cleared')}});
+ ['darkModeToggle','rememberTabToggle','tipsToggle'].forEach(id=>$(id).addEventListener('change',()=>{settings={dark:$('darkModeToggle').checked,rememberTab:$('rememberTabToggle').checked,tips:$('tipsToggle').checked};safeSet(KEY.settings,settings);applySettings();toast('Settings saved')}));
+ function saveCurrentLook(){const img=$('v17_image'); const legacy=$('tryOnImage'); const src=(img&&img.style.display!=='none'&&img.src)||((legacy&&legacy.style.display!=='none'&&legacy.src)||''); if(!src){toast('Generate a preview first');return} const item={image:src,color:window.selectedColor||document.getElementById('chosenColorLabel')?.textContent||'Look',outfit:window.selectedOutfit||document.getElementById('chosenOutfitLabel')?.textContent||'Style',bottom:document.getElementById('bottomColor')?.value||'',shoes:document.getElementById('footwear')?.value||'',savedAt:new Date().toISOString()}; if(saved.some(x=>x.color===item.color&&x.outfit===item.outfit)){toast('This look is already saved');return} saved.unshift(item);saved=saved.slice(0,12); if(!safeSet(KEY.saved,saved)){toast('Storage is full — try removing older looks');return} renderSaved();toast('Look saved ❤️');}
+ $('saveLookBtn')?.addEventListener('click',saveCurrentLook);
+ const navTabs=[...document.querySelectorAll('.nav-tab')]; const savedTab=localStorage.getItem('afc_last_tab_v1'); if(settings.rememberTab&&savedTab){const t=navTabs.find(x=>x.dataset.target===savedTab); if(t)t.click();}
+ navTabs.forEach(t=>t.addEventListener('click',()=>{if(settings.rememberTab)localStorage.setItem('afc_last_tab_v1',t.dataset.target)}));
+ renderProfile();renderSaved();applySettings();
+})();
+</script>
+<style>
+body.v19-dark{background:#111217;color:#f4f4f5}body.v19-dark .card,body.v19-dark .feature-mini,body.v19-dark .utility-btn,body.v19-dark .v17-builder,body.v19-dark .saved-card{background:#1a1b21;color:#f4f4f5;border-color:#30313a}body.v19-dark input,body.v19-dark select,body.v19-dark textarea{background:#15161b;color:#fff;border-color:#363741}body.v19-dark .muted,body.v19-dark .section-subtitle,body.v19-dark .small-note,body.v19-dark .tryon-status{color:#b8bac3}body.v19-dark .hint,body.v19-dark .choice-summary,body.v19-dark .v17-summary{background:#22232b;color:#ddd;border-color:#33343d}
+</style>
+
+<script>
+document.getElementById('v17_save_look')?.addEventListener('click',()=>{document.getElementById('saveLookBtn')?.click()});
+</script>
 </body>
 </html>
