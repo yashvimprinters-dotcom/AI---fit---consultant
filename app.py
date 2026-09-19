@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from openai import (
@@ -97,27 +97,6 @@ async def security_middleware(request: Request, call_next):
     if request.url.scheme == "https":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
-
-@app.get("/manifest.webmanifest")
-@app.get("/manifest.json")
-async def pwa_manifest():
-    return JSONResponse(content={
-        "id": "/?source=pwa", "name": "FITORA – Your fit. Your style. Your look.", "short_name": "FITORA",
-        "description": "AI fashion consultant for fit, size, outfits and visual try-on.",
-        "start_url": "/?source=pwa", "scope": "/", "display": "standalone", "orientation": "portrait-primary",
-        "background_color": "#10051f", "theme_color": "#10051f",
-        "categories": ["lifestyle", "shopping"],
-        "icons": [
-            {"src": "/static/icons/fitora-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-            {"src": "/static/icons/fitora-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-            {"src": "/static/icons/fitora-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
-            {"src": "/static/icons/fitora-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
-        ],
-    }, headers={"Cache-Control":"no-store"})
-
-@app.get("/sw.js")
-async def pwa_service_worker():
-    return Response(content=Path("static/sw.js").read_text(encoding="utf-8"), media_type="application/javascript", headers={"Cache-Control": "no-cache"})
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -242,18 +221,96 @@ def home():
         return f.read()
 
 
+
+# V35: shopping search + lightweight ratings. No OpenAI dependency is required for these features.
+SHOPPING_STORES = {
+    "Amazon": "https://www.amazon.in/s?k={q}",
+    "Flipkart": "https://www.flipkart.com/search?q={q}",
+    "Meesho": "https://www.meesho.com/search?q={q}",
+    "Myntra": "https://www.myntra.com/search?rawQuery={q}",
+    "AJIO": "https://www.ajio.com/search/?text={q}",
+}
+RATING_BUCKET = []
+RATING_LIMIT = 5000
+
+def _clean_shop_query(value: str):
+    value = _bounded(value, 120, "Search query")
+    return re.sub(r"[\r\n\x00]", " ", value).strip()
+
+def _clean_rating_text(value: str, limit=240):
+    value = _bounded(value, limit, "Feedback")
+    return re.sub(r"[\r\n\x00]", " ", value).strip()
+
+@app.get("/api/shopping/search")
+async def shopping_search(q: str = ""):
+    try:
+        query = _clean_shop_query(q)
+    except ValueError:
+        return JSONResponse({"error": "Search query is too long."}, status_code=400)
+    if not query:
+        return JSONResponse({"query": "", "stores": []})
+    from urllib.parse import quote_plus
+    stores = [
+        {"store": name, "url": template.format(q=quote_plus(query))}
+        for name, template in SHOPPING_STORES.items()
+    ]
+    return JSONResponse({"query": query, "stores": stores, "live_catalog": False})
+
+@app.post("/api/shopping/click")
+async def shopping_click(request: Request):
+    try:
+        body = await request.json()
+        store = _clean_rating_text(str(body.get("store", "")), 40)
+        query = _clean_shop_query(str(body.get("query", "")))
+        if store not in SHOPPING_STORES:
+            return JSONResponse({"error": "Unsupported store."}, status_code=400)
+        # Analytics is intentionally minimal and in-memory for this beta build.
+        return JSONResponse({"ok": True, "store": store, "query": query})
+    except ValueError:
+        return JSONResponse({"error": "Invalid shopping request."}, status_code=400)
+    except Exception:
+        return JSONResponse({"error": "Shopping request could not be recorded."}, status_code=400)
+
+@app.post("/api/ratings")
+async def submit_rating(request: Request):
+    try:
+        body = await request.json()
+        rating = int(body.get("rating", 0))
+        if rating < 1 or rating > 5:
+            return JSONResponse({"error": "Rating must be between 1 and 5."}, status_code=400)
+        entry = {
+            "rating": rating,
+            "fit": max(0, min(5, int(body.get("fit", 0) or 0))),
+            "style": max(0, min(5, int(body.get("style", 0) or 0))),
+            "colour": max(0, min(5, int(body.get("colour", 0) or 0))),
+            "helpful": bool(body.get("helpful", False)),
+            "feedback": _clean_rating_text(str(body.get("feedback", ""))),
+            "created_at": int(time.time()),
+        }
+        RATING_BUCKET.append(entry)
+        if len(RATING_BUCKET) > RATING_LIMIT:
+            del RATING_BUCKET[:-RATING_LIMIT]
+        return JSONResponse({"ok": True, "summary": _rating_summary()})
+    except (ValueError, TypeError):
+        return JSONResponse({"error": "Please provide a valid rating."}, status_code=400)
+    except Exception:
+        return JSONResponse({"error": "Rating could not be submitted."}, status_code=400)
+
+def _rating_summary():
+    if not RATING_BUCKET:
+        return {"count": 0, "average": None, "helpful_percent": None}
+    avg = sum(x["rating"] for x in RATING_BUCKET) / len(RATING_BUCKET)
+    helpful = [x for x in RATING_BUCKET if isinstance(x.get("helpful"), bool)]
+    helpful_percent = round(100 * sum(x["helpful"] for x in helpful) / len(helpful)) if helpful else None
+    return {"count": len(RATING_BUCKET), "average": round(avg, 1), "helpful_percent": helpful_percent}
+
+@app.get("/api/ratings/summary")
+async def ratings_summary():
+    return JSONResponse(_rating_summary())
+
 @app.get("/health")
 def health():
     return {"status": "ok", "product": "FITORA", "security": "hardened", "ai_model": _model_name(), "ai_configured": bool(os.getenv("OPENAI_API_KEY")), "photo_in_recommendation": os.getenv("FIT_INCLUDE_PHOTO_IN_RECOMMEND", "false").lower() == "true"}
-
-
-@app.get("/api/public-config")
-def public_config():
-    # Only non-secret browser configuration is exposed. Never expose OPENAI_API_KEY.
-    return {
-        "adsense_client_id": os.getenv("ADSENSE_CLIENT_ID", "").strip(),
-        "referral_rewards_enabled": os.getenv("FITORA_REFERRAL_REWARDS_ENABLED", "false").lower() == "true",
-    }
 
 
 
