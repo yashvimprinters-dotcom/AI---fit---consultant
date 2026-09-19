@@ -98,18 +98,22 @@ async def security_middleware(request: Request, call_next):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
+@app.get("/manifest.webmanifest")
 @app.get("/manifest.json")
 async def pwa_manifest():
     return JSONResponse(content={
-        "id": "/", "name": "FITORA – Your fit. Your style. Your look.", "short_name": "FITORA",
+        "id": "/?source=pwa", "name": "FITORA – Your fit. Your style. Your look.", "short_name": "FITORA",
         "description": "AI fashion consultant for fit, size, outfits and visual try-on.",
-        "start_url": "/", "scope": "/", "display": "standalone",
+        "start_url": "/?source=pwa", "scope": "/", "display": "standalone", "orientation": "portrait-primary",
         "background_color": "#10051f", "theme_color": "#10051f",
+        "categories": ["lifestyle", "shopping"],
         "icons": [
-            {"src": "/static/icons/fitora-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-            {"src": "/static/icons/fitora-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+            {"src": "/static/icons/fitora-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+            {"src": "/static/icons/fitora-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+            {"src": "/static/icons/fitora-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+            {"src": "/static/icons/fitora-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
         ],
-    })
+    }, headers={"Cache-Control":"no-store"})
 
 @app.get("/sw.js")
 async def pwa_service_worker():
@@ -241,6 +245,15 @@ def home():
 @app.get("/health")
 def health():
     return {"status": "ok", "product": "FITORA", "security": "hardened", "ai_model": _model_name(), "ai_configured": bool(os.getenv("OPENAI_API_KEY")), "photo_in_recommendation": os.getenv("FIT_INCLUDE_PHOTO_IN_RECOMMEND", "false").lower() == "true"}
+
+
+@app.get("/api/public-config")
+def public_config():
+    # Only non-secret browser configuration is exposed. Never expose OPENAI_API_KEY.
+    return {
+        "adsense_client_id": os.getenv("ADSENSE_CLIENT_ID", "").strip(),
+        "referral_rewards_enabled": os.getenv("FITORA_REFERRAL_REWARDS_ENABLED", "false").lower() == "true",
+    }
 
 
 

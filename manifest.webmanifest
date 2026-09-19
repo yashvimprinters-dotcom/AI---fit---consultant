@@ -1,0 +1,42 @@
+{
+  "id": "/?source=pwa",
+  "name": "FITORA \u2013 Your fit. Your style. Your look.",
+  "short_name": "FITORA",
+  "description": "AI fashion consultant for fit, size, outfits and visual try-on.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#10051f",
+  "theme_color": "#10051f",
+  "categories": [
+    "lifestyle",
+    "shopping"
+  ],
+  "icons": [
+    {
+      "src": "/static/icons/fitora-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/fitora-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/fitora-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/icons/fitora-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
